@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<product-backlog>
+    <stories type="todo">
+        <story theme="Extraction" priority="400" points="3">
+            En tant que gestionnaire des abonnes
+            Je veux extraire la listes des abonnes au format CSV
+            Pour pouvoir avoir un apercu global des abonnes dans un tableur.
+        </story>
+        <story theme="Extraction" priority="300" points="5">
+            En tant que gestionnaire des abonnes
+            Je veux avoir un rapport d'incoherence
+            Pour pouvoir nettoyer ma base d'abonnes.
+        </story>
+        <story theme="Extraction" priority="100" points="3">
+            En tant que mainteneur de l'application
+            Je veux generer un export sql de la base
+            Pour pouvoir la transporter et restaurer facilement.
+        </story>
+        <story theme="Extraction" priority="200" points="5">
+            En tant que gestionnaire des abonnes
+            Je veux avoir un rapport html sur pluseurs pages
+            Pour pouvoir representer les abonnes
+        </story>
+        <story theme="Interface" priority="100" points="5">
+            En tant que gestionnaire des abonnés
+            Je veux accéder au service de gestion par internet
+            Pour que le système soit centralisé
+        </story>
+    </stories>
+    <stories type="done">
+        <story theme="GestionAbonnes" priority="1000" points="3">
+            En tant que gestionnaire des abonnés
+            je veux pouvoir saisir les information abonnés
+            Pour leur envoyer le journal
+        </story>
+        <story theme="GestionAbonnes" priority="800" points="2">
+            En tant que gestionnaire des abonnés
+            Je veux pouvoir modifier les informations abonnés
+            pour qu'ils continuent de recevoir le journal après un changement d'adresse
+        </story>
+        <story theme="GestionAbonnes" priority="400" points="1">
+            En tant que gestionnaire des abonnés 
+            Je veux savoir s'il s'agit d'un premier abonnement ou d'un réabonnement
+            Afin de ...?
+        </story>
+        <story theme="GestionAbonnes" priority="500" points="1">
+            En tant que gestionnaire des abonnés
+            Je veux pouvoir supprimer les personnes qui ne sont plus abonnés
+            Pour ne pas avoir à les traiter lors de l'envoi du journal
+        </story>
+        <story theme="Extraction" priority="900" points="3">
+            En tant que gestionnaire des abonnés
+            Je extraire la liste des abonnés allant recevoir le prochain numéro
+            Pour l'envoyer au service de création de données de routage
+        </story>
+        <story theme="GestionAbonnes" priority="600" points="2">
+            En tant que gestionnaire des abonnés
+            Je veux générer la liste des abonnés arrivant à terme de leur abonnement
+            Pour leur envoyer un email de renouvellement
+        </story>
+        <story theme="Migration" priority="700" points="2">
+            En tant que gestionnaire des abonnés
+            Je veux importer la liste des abonnées existante
+            Pour utiliser rapidement le nouveau système
+        </story>
+        <story theme="Interface" priority="300" points="5">
+            En tant que gestionnaire des abonnés
+            Je veux une interface facile à utiliser pour effectuer mes tâches
+            Pour être plus efficace dans mon travail
+        </story>
+    </stories>
+</product-backlog>

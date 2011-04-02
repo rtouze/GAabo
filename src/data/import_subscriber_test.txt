@@ -1,0 +1,23 @@
+date	numéros restants	à partir du numéro	HS 1	hs2	hs3	adhésion	paiement	banque	nom	prenom	société	complement nom	adresse	complement adresse	cp	ville	règlement	reglement adhésion	commentaire	mail	reab	dep	autocollant envoyé		
+08/11/2009	0	21				oui	ch		Feugere	Emilie			67 rue de la raffiniere		85350	Ile d'Yeu	27	13		xavier.gicqueau@club-internet.fr	15	85	1		
+14/11/2009	0	21					ch		Lopez	Mathilde			31 allée des loges		39220	Premanon	27			mathildelopez@yahoo.fr		39			
+15/11/2009	0	21	6				ch		Faullummel	Marian			LES DOUSSINS		49320	BLAISON-GOHIER	35			leslulusbleu@yahoo.fr		49			
+15/11/2009	0	21					ch	ebsco			Mediatheque Jean Falala		2 rue des Fuseliers		51095	Reims Cedex	27				OUI	51			
+15/11/2009	0	21					ch	ebsco			Bibliotheque de la ville de lyon	service des periodiques	30 bd vivier merle		69431	lyon cedex 03	27				OUI	69			
+09/11/2010	5	26	7				pp		Anne Debelle				Rue Dupré 63	Bruxelles 1090		Belgique	41			nannouxkinnard@advalvas.be	8				
+02/11/2010	5	26					pp		Mme BARON Marie-Christine				3 chemin du MONTPLAISIR		11390	Fontiés -Cabardés	30								
+21/11/2010	5	26					ch		PENIGUEL	AURELIE		11 IMPASSE DES FLEURS JAUNES	RUE LORY LES HAUTS		97490	STE CLOTILDE	27	13							
+21/11/2010	5	26					ch		Colas	Blanche			6 rue de la Fontaine		30500	Saint Ambroix	30				14				
+21/11/2010	5	26					ch		CHARDON	JULIE	ASSOCIATION REGALL		8 LOTISSEMENT DES SOURCES		26240	ST UZE	27								
+21/11/2010	5	26	7x				CH		BRAGER-PLANCHON	EMILIE-MARIE			FERME MULETIERE DU GRAND PATIS		07700	BIDON	35								
+21/11/2010	5	26					CH		Caroline More			appartement 22	25 avenue de la redoute		92600	Asnières sur Seine	30			more.caroline@orange.fr	8				
+21/11/2010	5	26					CH		fabienne leron				11 allee persee		26120	montelier 	30			vitafaby@aol.com					
+05/12/2010	6	27	7				ch		FerjoUX	Hélène			2 rue du Meunier	Thaire le Fagnorex	17170	ST JEAN DE LIVERSAY	35			LN.FERJOUX@FREE.FR	15				
+05/12/2010	6	27					IS ABO		MEDIATHEQUE LOUIS ARAGON		SECION ADULTES	LE CHÂTEAU	PLACE DES 3 MARTYRS		91390	MORSANG SUR ORGE	30				21				
+05/12/2010	7	27					CH EBSCO				BIBLIOTHEQUE DISCOTHEQUE		CENTRE VILLE	BP 3028	38816	GRENOBLE CEDEX 1	27				22				
+05/12/2010	6	27					ch	ebsco			Mediatheque Memoires et societes		23 rue Valentin Hauy		69100	Villeurbanne	27				15				
+05/12/2010	7	27					CH EBSCO				BIBLIOTHEQUE ARMAND SALACROU	ESPACE ACTUALITE	17 RUE JULES LECESNE		76085	LE HAVRE	27				22				
+05/12/2010	7	27	7				CH EBSCO				MEDIATHEQUE DES FORGES		2 RUE DE FRANCHEPRE		54240	JOEUF	35				22				
+05/12/2010	6	27					CH		RELANGE	MARIE PIERRE			RUE DES RAIES		25210	PLAIMBOIS DU MIROIR	27			RELANGE.JOEL@ORANGE.FR					
+05/12/2010	6	27					CH		WOLFF	JUDITH			15 RUE DE LUPSTEIN		67200	STRASBOURG	27								
+29/11/2010	6	27					vir		DELLA FAILLE	MAPI			RUE LES FONDS 125	5340 GESVES		Belgique	33								
