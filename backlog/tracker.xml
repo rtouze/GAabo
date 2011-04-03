@@ -1,29 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tracker>
     <defects status="open">
-        <defect seferity="major" opening-date="20110402" >
-            Le format de date dans l'IHM est yyyy-mm-dd. Quand on l'entre,
-            subscriber.py attend dd/mm/yyyy. Preciser le format dans l'IHM.
+        <defect seferity="major" opening-date="20110403" >
+            Lorsqu'on edite un abonne puis qu'on le reedite apres confirmation,
+            un nouvel abonne est cree alors que le meme devrait etre utilise.
         </defect>
-        <defect seferity="major" opening-date="20110402" >
+        <defect id="2" seferity="major" opening-date="20110402" >
             Il faut une scrollbar pour la liste des abonnes a renouveler
         </defect>
-        <defect seferity="minor" opening-date="20110402" >
+        <defect id="3" seferity="minor" opening-date="20110402" >
             Pour les champs "membre" et "stickers envoye", mettre un bouton
             radio et pas un champ texte.
         </defect>
-        <defect seferity="minor" opening-date="20110402" >
+        <defect id="4" seferity="minor" opening-date="20110402" >
             Faire les recherche de nom et de company avec un like, ce sera plus simple
         </defect>
-        <defect seferity="minor" opening-date="20110402" >
+        <defect id="5" seferity="minor" opening-date="20110402" >
             La gestion de l'encodage des inputs se fait en separant UTF-8 du
             reste. Il faut trouver qqc de plus elegant.
         </defect>
     </defects>
     <defects status="closed">
-        <defect seferity="minor" opening-date="20110402" closing-date="20110402" >
+        <defect id="1" seferity="minor" opening-date="20110402" closing-date="20110402" >
             Probleme de caracteres accentues de l'IHM sous Windows. Il faut
             prefixer les chaines par u pour qu'elles soient bien interpretees
+        </defect>
+        <defect id="6" seferity="major" opening-date="20110402" >
+            Le format de date dans l'IHM est yyyy-mm-dd. Quand on l'entre,
+            subscriber.py attend dd/mm/yyyy. Preciser le format dans l'IHM.
         </defect>
     </defects>
 </tracker>

@@ -53,7 +53,10 @@ class EditionPanel(wx.Panel):
 
         box = wx.BoxSizer(wx.VERTICAL)
         self.frame = frame
-        self.current_edited_subscriber = frame.current_edited_subscriber
+        if frame.current_edited_subscriber is None:
+            self.subscriber = None
+        else:
+            self.subscriber = frame.current_edited_subscriber
         box.Add(self.get_panel_title())
         grid = wx.FlexGridSizer(20, 2, 5, 5)
         self.pairs = []
@@ -70,7 +73,7 @@ class EditionPanel(wx.Panel):
     def get_panel_title(self):
         """Generate the title of the panel, wether we are creating a new
         subscriber or editing a new one."""
-        if self.current_edited_subscriber is None:
+        if self.subscriber is None:
             return wx.StaticText(self, -1, u'Édition d\'un nouvel abonne\n')
         else:
             return wx.StaticText(self, -1, u'Édition de l\'abonne\n')
@@ -86,24 +89,49 @@ class EditionPanel(wx.Panel):
         """Generate a pair of field name + field value"""
         field_constant_list = gaabo_constants.field_names
         displayed_field_name = field_constant_list[field_label_id][1]
-        label = wx.StaticText(self, -1, displayed_field_name)
-        if self.current_edited_subscriber is None:
+        internal_field_name = field_constant_list[field_label_id][0]
+        subscriber_field_name = field_constant_list[field_label_id][0]
+        if subscriber_field_name == 'subscription_date':
+            label = wx.StaticText(
+                    self,
+                    -1,
+                    displayed_field_name + ' (jj/mm/aaaa)'
+                    )
+        else:
+            label = wx.StaticText(self, -1, displayed_field_name)
+
+        if self.subscriber is None:
             self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
                     self,
                     -1,
                     size=(200, FIELD_HEIGHT)
                     )
         else:
-            #TODO il faudra faire varier selon les types de champ
-            subscriber_field_name = field_constant_list[field_label_id][0]
-            self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
-                    self,
-                    -1,
-                    unicode(
-                        self.frame.current_edited_subscriber.__dict__[subscriber_field_name]
-                        ),
-                    size=(200, FIELD_HEIGHT)
-                    )
+            if subscriber_field_name == 'subscription_date':
+                subscr_date = self.subscriber.subscription_date
+                if subscr_date is None:
+                    self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
+                            self,
+                            -1,
+                            size=(200, FIELD_HEIGHT)
+                            )
+                else:
+                    self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
+                            self,
+                            -1,
+                            subscr_date.strftime('%d/%m/%Y'),
+                            size=(200, FIELD_HEIGHT)
+                            )
+            else:
+                #TODO il faudra faire varier selon les types de champ
+                self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
+                        self,
+                        -1,
+                        unicode(
+                            self.subscriber.__dict__[subscriber_field_name]
+                            ),
+                        size=(200, FIELD_HEIGHT)
+                        )
         return (label, self.frame.field_widget_dict[field_label_id])
 
     def generate_button_box(self):
@@ -135,18 +163,18 @@ class SearchPanel(wx.Panel):
         """Generate the search part of the search panel"""
         self.box.Add(wx.StaticText(self, -1, u'Entrer les critères de recherche :\n'))
         grid = wx.FlexGridSizer(2, 2, 5, 5)
-        grid.Add(wx.StaticText(self, -1, 'Nom de famille'))
+        grid.Add(wx.StaticText(self, -1, 'Nom de famille'), flag=wx.ALIGN_CENTER_VERTICAL)
         if len(self.frame.searched_pair) < 1:
-            self.frame.searched_name_in = wx.TextCtrl(self, -1, size=(200, 20))
+            self.frame.searched_name_in = wx.TextCtrl(self, -1, size=(200, FIELD_HEIGHT))
         else:
-            self.frame.searched_name_in = wx.TextCtrl(self, -1, self.frame.searched_pair[0], size=(200, 20))
-        grid.Add(self.frame.searched_name_in)
-        grid.Add(wx.StaticText(self, -1, u'Nom société'))
+            self.frame.searched_name_in = wx.TextCtrl(self, -1, self.frame.searched_pair[0], size=(200, FIELD_HEIGHT))
+        grid.Add(self.frame.searched_name_in, flag=wx.ALIGN_CENTER_VERTICAL)
+        grid.Add(wx.StaticText(self, -1, u'Nom société'), flag=wx.ALIGN_CENTER_VERTICAL)
         if len(self.frame.searched_pair) < 2:
-            self.frame.searched_company_in = wx.TextCtrl(self, -1, size=(200, 20))
+            self.frame.searched_company_in = wx.TextCtrl(self, -1, size=(200, FIELD_HEIGHT))
         else:
-            self.frame.searched_company_in = wx.TextCtrl(self, -1, self.frame.searched_pair[1], size=(200, 20))
-        grid.Add(self.frame.searched_company_in)
+            self.frame.searched_company_in = wx.TextCtrl(self, -1, self.frame.searched_pair[1], size=(200, FIELD_HEIGHT))
+        grid.Add(self.frame.searched_company_in, flag=wx.ALIGN_CENTER_VERTICAL)
         self.box.Add(grid)
         search_button = wx.Button(self, -1, u'Rechercher')
         self.frame.Bind(wx.EVT_BUTTON, self.frame.search_subscriber, id=search_button.GetId())

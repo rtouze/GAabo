@@ -131,7 +131,7 @@ class SubscriberDAO(object):
             sub.city, 
             sub.email_address, 
             sub.subscriber_since_issue, 
-            sub.subscription_date, 
+            iso_date_string,
             sub.issues_to_receive, 
             sub.subs_beginning_issue, 
             sub.member, 
@@ -145,8 +145,17 @@ class SubscriberDAO(object):
             sub.bank,
             sub.ordering_type
             ) = row
+            sub.subscription_date = self.date_from_iso(iso_date_string)
             sublist.append(sub)
         return sublist
+
+    def date_from_iso(self, iso_date_string):
+        if iso_date_string is not None:
+            (year, month, day) = iso_date_string.split('-')
+            return datetime.date(int(year), int(month), int(day))
+        else:
+            return None
+
 
     def save(self, subscriber):
         sql = """INSERT INTO subscribers (

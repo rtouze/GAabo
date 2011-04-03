@@ -3,9 +3,9 @@
 
 import unittest
 from subscriber import Subscriber
-import create_table
 import sqlite3
 import gaabo_conf
+import datetime
 
 class TestSubscrisber(unittest.TestCase):
     '''Tests the Subscriber class'''
@@ -152,6 +152,16 @@ class TestSubscrisber(unittest.TestCase):
         self.assertEquals(len(ending_sub_list), 2)
         self.assertEquals(ending_sub_list[0].lastname, 'toto')
         self.assertEquals(ending_sub_list[1].lastname, 'tata')
+
+    def test_date(self):
+        """Test the format of the date retrieved from the DB"""
+        self.sub.lastname = 'toto'
+        self.sub.subscription_date = datetime.date(2011, 3, 31)
+        self.sub.save()
+        sub = Subscriber.get_subscribers_from_lastname('toto')[0]
+        actual_date = sub.subscription_date
+
+        self.assertEquals(actual_date.strftime('%d/%m/%Y'), '31/03/2011')
 
 if __name__ == '__main__':
     unittest.main()

@@ -8,6 +8,7 @@ from gaabo_controler import Controler
 from subscriber import Subscriber
 import sys
 import panels
+import datetime
 
 class GaaboFrame(wx.Frame):
 
@@ -42,6 +43,7 @@ class GaaboFrame(wx.Frame):
         self.Show(True)
 
     def show_subscriber_creation_form(self, event):
+        self.current_edited_subscriber = None
         self.get_subscriber_edition_panel()
 
     def refresh_window(self):
@@ -76,15 +78,29 @@ class GaaboFrame(wx.Frame):
         field_constant_list = gaabo_constants.field_names
         for key in self.field_widget_dict.keys():
             subscriber_field_name = field_constant_list[key][0]
-            if self.encoding == 'UTF-8':
-                subscriber.__dict__[subscriber_field_name] = unicode(
-                        self.field_widget_dict[key].GetValue()
-                        )
+            #TODO ca commence a puer...
+            if subscriber_field_name == 'subscription_date':
+                field_value = self.field_widget_dict[key].GetValue()
+                if field_value.strip() != '':
+                    date_array = field_value.split('/')
+                    subscriber.subscription_date = datetime.date(
+                            int(date_array[2]),
+                            int(date_array[1]),
+                            int(date_array[0])
+                            )
+                else:
+                    subscriber.subscription_date = None
+                    
             else:
-                subscriber.__dict__[subscriber_field_name] = unicode(
-                        self.field_widget_dict[key].GetValue(),
-                        self.encoding
-                        )
+                if self.encoding == 'UTF-8':
+                    subscriber.__dict__[subscriber_field_name] = unicode(
+                            self.field_widget_dict[key].GetValue()
+                            )
+                else:
+                    subscriber.__dict__[subscriber_field_name] = unicode(
+                            self.field_widget_dict[key].GetValue(),
+                            self.encoding
+                            )
 
         subscriber.save()
         if self.current_edited_subscriber is not None:
@@ -195,7 +211,7 @@ if __name__ == '__main__':
     """NOTE: configuration
     Sous windows, le home dir est identifie comme %HOMEDRIVE%\%HOMEPATH%
     Sous *nix, c'est $HOME :)"""
-    #gaabo_conf.db_name = 'test.db'
+    gaabo_conf.db_name = 'test.db'
     prog = wx.App(0)
     frame = GaaboFrame(None, 'Gaabo App')
     prog.MainLoop()
