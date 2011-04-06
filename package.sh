@@ -20,5 +20,6 @@ case ${TYPE} in
 esac
 
 zipped=`ls ${packet_name}.*`
+rm -rf ${packet_name}
 echo "Le packet ${zipped} est genere"
 exit 0
