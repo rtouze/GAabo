@@ -104,15 +104,15 @@ class SubscriberDAO(object):
     def search_from_lastname(self, lastname):
         '''Return a list of subs from a search in the DB based on a lastname'''
         sql = """SELECT * FROM subscribers
-        WHERE lower(lastname) = lower(?)"""
-        self.result = self.cursor.execute(sql, (lastname, ))
+        WHERE lower(lastname) LIKE lower(?)"""
+        self.result = self.cursor.execute(sql, (lastname + '%', ))
         return self.fetch_result()
 
     def search_from_company(self, company):
         '''Return a list of subs from a search in the DB based on a company'''
         sql = """SELECT * FROM subscribers
-        WHERE lower(company) = lower(?)"""
-        self.result = self.cursor.execute(sql, (company, ))
+        WHERE lower(company) LIKE lower(?)"""
+        self.result = self.cursor.execute(sql, (company + '%', ))
         return self.fetch_result()
 
     def fetch_result(self):

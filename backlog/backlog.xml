@@ -2,7 +2,7 @@
 <product-backlog>
     <stories type="todo">
         <story theme="Verification" priority="600" points="2">
-            En tant que gestionnqire des abonnes
+            En tant que gestionnaire des abonnes
             Je veux que les information que je saisis soient controlees
             Pour eviter de mettre des donnees au format errone dans la base
         <story theme="Extraction" priority="400" points="3">

@@ -7,7 +7,7 @@ import sqlite3
 import gaabo_conf
 import datetime
 
-class TestSubscrisber(unittest.TestCase):
+class TestSubscriber(unittest.TestCase):
     '''Tests the Subscriber class'''
 
     def setUp(self):
@@ -26,15 +26,15 @@ class TestSubscrisber(unittest.TestCase):
 
     def test_subscriber_last_name(self):
         '''Test if the subscriber is created with default values'''
-        self.assertEquals(self.sub.lastname, '')
-        self.assertEquals(self.sub.issues_to_receive, 6)
+        self.assertEqual(self.sub.lastname, '')
+        self.assertEqual(self.sub.issues_to_receive, 6)
 
     def test_new_subscribtion(self):
         '''Test if the order_new_subscription method add 6 issues left'''
         former_issues_left = 3
         self.sub.issues_to_receive = former_issues_left
         self.sub.order_new_subscription()
-        self.assertEquals(self.sub.issues_to_receive, former_issues_left + 6)
+        self.assertEqual(self.sub.issues_to_receive, former_issues_left + 6)
 
     def test_get_subscribers_from_name(self):
         '''Retrieve a subsriber list using name'''
@@ -44,7 +44,17 @@ class TestSubscrisber(unittest.TestCase):
         self.conn.commit()
         sub_class = Subscriber
         self.sub = sub_class.get_subscribers_from_lastname('DUPONT')[0]
-        self.assertEquals(self.sub.firstname, 'Jean')
+        self.assertEqual(self.sub.firstname, 'Jean')
+
+    def test_get_subscribers_from_name_like(self):
+        '''Retrieve a subsriber list using beginning of the name'''
+        sql = """INSERT INTO subscribers (lastname, firstname)
+        VALUES ('DUPONT-ANDRE', 'Toto')"""
+        self.cursor.execute(sql)
+        self.conn.commit()
+        sub_class = Subscriber
+        self.sub = sub_class.get_subscribers_from_lastname('DUPONT')[0]
+        self.assertEqual(self.sub.firstname, 'Toto')
 
     def test_get_subscribers_from_company(self):
         '''Retrieve a subsriber list company name'''
@@ -54,7 +64,17 @@ class TestSubscrisber(unittest.TestCase):
         self.conn.commit()
         sub_class = Subscriber
         self.sub = sub_class.get_subscribers_from_company('Google')[0]
-        self.assertEquals(self.sub.name_addition, 'IsNotEvil')
+        self.assertEqual(self.sub.name_addition, 'IsNotEvil')
+
+    def test_get_subscribers_from_company_like(self):
+        '''Retrieve a subsriber list company name'''
+        sql = """INSERT INTO subscribers (company, name_addition)
+        VALUES ('REDHAT', 'IsTrankil')"""
+        self.cursor.execute(sql)
+        self.conn.commit()
+        sub_class = Subscriber
+        self.sub = sub_class.get_subscribers_from_company('RED')[0]
+        self.assertEqual(self.sub.name_addition, 'IsTrankil')
 
     def test_save_subscriber(self):
         '''Test that subscriber information are saved in the DB'''
@@ -64,8 +84,8 @@ class TestSubscrisber(unittest.TestCase):
         self.sub.save()
         results = self.cursor.execute('SELECT firstname, lastname FROM subscribers')
         for row in results:
-            self.assertEquals(row[0], 'John')
-            self.assertEquals(row[1], 'Doe')
+            self.assertEqual(row[0], 'John')
+            self.assertEqual(row[1], 'Doe')
 
     def test_update_subscriber(self):
         '''Test that a subscriber update is well commited in the data base'''
@@ -86,7 +106,7 @@ class TestSubscrisber(unittest.TestCase):
         result = self.cursor.execute(sql, (self.sub.identifier,))
         for row in result:
             actual = row[0]
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     def test_delete_customer(self):
         '''Test if a given customer is deleted'''
@@ -102,7 +122,7 @@ class TestSubscrisber(unittest.TestCase):
         for row in result:
             actual = row[0]
         expected = 0
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     def test_decrement_issues_to_receive(self):
         self.sub.lastname = 'toto'
@@ -114,11 +134,11 @@ class TestSubscrisber(unittest.TestCase):
         self.sub.save()
         Subscriber.decrement_issues_to_receive()
         sub = Subscriber.get_subscribers_from_lastname('toto')[0]
-        self.assertEquals(sub.issues_to_receive, sub.ISSUES_IN_A_YEAR - 1)
+        self.assertEqual(sub.issues_to_receive, sub.ISSUES_IN_A_YEAR - 1)
         sub = Subscriber.get_subscribers_from_lastname('tata')[0]
-        self.assertEquals(sub.issues_to_receive, sub.ISSUES_IN_A_YEAR - 1)
+        self.assertEqual(sub.issues_to_receive, sub.ISSUES_IN_A_YEAR - 1)
         sub = Subscriber.get_subscribers_from_lastname('titi')[0]
-        self.assertEquals(sub.issues_to_receive, 0)
+        self.assertEqual(sub.issues_to_receive, 0)
 
     def test_decrement_special_issues_to_receive(self):
         self.sub.lastname = 'toto'
@@ -132,11 +152,11 @@ class TestSubscrisber(unittest.TestCase):
         self.sub.save()
         Subscriber.decrement_special_issues_to_receive()
         sub = Subscriber.get_subscribers_from_lastname('toto')[0]
-        self.assertEquals(sub.hors_serie1, 2)
+        self.assertEqual(sub.hors_serie1, 2)
         sub = Subscriber.get_subscribers_from_lastname('tata')[0]
-        self.assertEquals(sub.hors_serie1, 3)
+        self.assertEqual(sub.hors_serie1, 3)
         sub = Subscriber.get_subscribers_from_lastname('titi')[0]
-        self.assertEquals(sub.hors_serie1, 0)
+        self.assertEqual(sub.hors_serie1, 0)
 
     def test_end_of_subscribtion_list(self):
         self.sub.lastname = 'toto'
@@ -149,9 +169,9 @@ class TestSubscrisber(unittest.TestCase):
         self.sub.issues_to_receive = 10
         self.sub.save()
         ending_sub_list = Subscriber.get_end_of_subscribtion()
-        self.assertEquals(len(ending_sub_list), 2)
-        self.assertEquals(ending_sub_list[0].lastname, 'toto')
-        self.assertEquals(ending_sub_list[1].lastname, 'tata')
+        self.assertEqual(len(ending_sub_list), 2)
+        self.assertEqual(ending_sub_list[0].lastname, 'toto')
+        self.assertEqual(ending_sub_list[1].lastname, 'tata')
 
     def test_date(self):
         """Test the format of the date retrieved from the DB"""
@@ -160,8 +180,7 @@ class TestSubscrisber(unittest.TestCase):
         self.sub.save()
         sub = Subscriber.get_subscribers_from_lastname('toto')[0]
         actual_date = sub.subscription_date
-
-        self.assertEquals(actual_date.strftime('%d/%m/%Y'), '31/03/2011')
+        self.assertEqual(actual_date.strftime('%d/%m/%Y'), '31/03/2011')
 
 if __name__ == '__main__':
     unittest.main()
