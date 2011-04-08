@@ -20,7 +20,7 @@ class TestSubscriberImporter(unittest.TestCase):
         self.assertEquals(sub.firstname, 'Emilie')
         self.assertEquals(
                 sub.subscription_date,
-                unicode(datetime.date(2009, 11, 8))
+                datetime.date(2009, 11, 8)
                 )
         self.assertEquals(sub.issues_to_receive, 0)
         self.assertEquals(sub.subs_beginning_issue, 21)
@@ -56,12 +56,14 @@ class TestSubscriberImporter(unittest.TestCase):
         sub = Subscriber.get_subscribers_from_lastname(name)[0]
         self.assertEquals(sub.address_addition, 'Bruxelles 1090')
         self.assertEquals(sub.hors_serie1, 7)
+        self.assertEquals(sub.membership_price, 15.5)
 
     def test_lopez(self):
         '''Test to see if accent chars are imported'''
         name = 'lopez'
         sub = Subscriber.get_subscribers_from_lastname(name)[0]
         self.assertEquals(sub.address, u'31 allée des loges')
+
 
 if __name__ == '__main__':
     gaabo_conf.db_name = 'test.db'

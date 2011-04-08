@@ -61,7 +61,7 @@ class SubscriberImporter(object):
         self.sub.post_code = splitted_line[15]
         self.sub.city = splitted_line[16]
         self.sub.subscription_price = splitted_line[17]
-        self.sub.membership_price = self.field_to_int(splitted_line[18], 'membership_price')
+        self.sub.membership_price = self.field_to_float(splitted_line[18], 'membership_price')
         self.sub.email_address = splitted_line[20].lower()
         self.sub.subscriber_since_issue = self.format_sub_since_issue(
                 splitted_line[21],
@@ -100,12 +100,30 @@ class SubscriberImporter(object):
                 returned_field = int(field)
             except(ValueError):
                 returned_field = 0
-                self.logger.error( 
-                        ' wrong value %s for field %s line %d: integer expected.\n'
-                        % (field, field_name, self.current_line)
-                        )
-                self.print_bad_line()
+                error_params = ('int', field, field_name)
+                self.show_bad_field_error(error_params)
         return returned_field
+
+    def field_to_float(self, field, field_name):
+        '''Process a field that is expected to be an float'''
+        if field.strip() == '':
+            returned_field = 0
+        else:
+            try:
+                returned_field = float(field.replace(',', '.'))
+            except(ValueError):
+                returned_field = 0
+                error_params = ('float', field, field_name)
+                self.show_bad_field_error(error_params)
+        return returned_field
+
+    def show_bad_field_error(self, param_tuple):
+        field_type, field, field_name = param_tuple 
+        self.logger.error( 
+                ' wrong value %s for field %s line %d: %s expected.\n'
+                % (field, field_name, self.current_line, field_type)
+                )
+        self.print_bad_line()
 
     def print_bad_line(self):
         '''Print current line in the bad file'''

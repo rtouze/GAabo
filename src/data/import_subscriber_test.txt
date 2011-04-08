@@ -4,7 +4,7 @@ date	numéros restants	à partir du numéro	HS 1	hs2	hs3	adhésion	paiement	banq
 15/11/2009	0	21	6				ch		Faullummel	Marian			LES DOUSSINS		49320	BLAISON-GOHIER	35			leslulusbleu@yahoo.fr		49			
 15/11/2009	0	21					ch	ebsco			Mediatheque Jean Falala		2 rue des Fuseliers		51095	Reims Cedex	27				OUI	51			
 15/11/2009	0	21					ch	ebsco			Bibliotheque de la ville de lyon	service des periodiques	30 bd vivier merle		69431	lyon cedex 03	27				OUI	69			
-09/11/2010	5	26	7				pp		Anne Debelle				Rue Dupré 63	Bruxelles 1090		Belgique	41			nannouxkinnard@advalvas.be	8				
+09/11/2010	5	26	7				pp		Anne Debelle				Rue Dupré 63	Bruxelles 1090		Belgique	41	15,5		nannouxkinnard@advalvas.be	8				
 02/11/2010	5	26					pp		Mme BARON Marie-Christine				3 chemin du MONTPLAISIR		11390	Fontiés -Cabardés	30								
 21/11/2010	5	26					ch		PENIGUEL	AURELIE		11 IMPASSE DES FLEURS JAUNES	RUE LORY LES HAUTS		97490	STE CLOTILDE	27	13							
 21/11/2010	5	26					ch		Colas	Blanche			6 rue de la Fontaine		30500	Saint Ambroix	30				14				

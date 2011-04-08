@@ -3,7 +3,7 @@
 from subscriber_importer import SubscriberImporter
 
 def main():
-    importer = SubscriberImporter('../backlog/abonnements.csv')
+    importer = SubscriberImporter('../doc_externes/abonnements.csv')
     importer.do_truncate_import()
 if __name__ == '__main__':
     main()
