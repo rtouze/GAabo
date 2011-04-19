@@ -2,10 +2,11 @@
 '''This module tests the subscriber object'''
 
 import unittest
-from subscriber import Subscriber
 import sqlite3
-import gaabo_conf
 import datetime
+
+from subscriber import Subscriber
+import gaabo_conf
 
 class TestSubscriber(unittest.TestCase):
     '''Tests the Subscriber class'''
@@ -127,8 +128,10 @@ class TestSubscriber(unittest.TestCase):
     def test_decrement_issues_to_receive(self):
         self.sub.lastname = 'toto'
         self.sub.save()
+        self.sub = Subscriber()
         self.sub.lastname = 'tata'
         self.sub.save()
+        self.sub = Subscriber()
         self.sub.lastname = 'titi'
         self.sub.issues_to_receive = 0
         self.sub.save()
@@ -144,9 +147,11 @@ class TestSubscriber(unittest.TestCase):
         self.sub.lastname = 'toto'
         self.sub.hors_serie1 = 3
         self.sub.save()
+        self.sub = Subscriber()
         self.sub.lastname = 'tata'
         self.sub.hors_serie1 = 4
         self.sub.save()
+        self.sub = Subscriber()
         self.sub.lastname = 'titi'
         self.sub.hors_serie1 = 0
         self.sub.save()
@@ -162,9 +167,11 @@ class TestSubscriber(unittest.TestCase):
         self.sub.lastname = 'toto'
         self.sub.issues_to_receive = 1
         self.sub.save()
+        self.sub = Subscriber()
         self.sub.lastname = 'tata'
         self.sub.issues_to_receive = 0
         self.sub.save()
+        self.sub = Subscriber()
         self.sub.lastname = 'titi'
         self.sub.issues_to_receive = 10
         self.sub.save()
@@ -181,6 +188,14 @@ class TestSubscriber(unittest.TestCase):
         sub = Subscriber.get_subscribers_from_lastname('toto')[0]
         actual_date = sub.subscription_date
         self.assertEqual(actual_date.strftime('%d/%m/%Y'), '31/03/2011')
+
+    def test_new_subscriber_id(self):
+        """Test if we can get the ID of a saved Subscriber"""
+        self.sub.lastname='toto'
+        self.sub.fistname='hero'
+        self.sub.save()
+        ident = self.sub.identifier
+        self.assertNotEqual(-1, ident)
 
 if __name__ == '__main__':
     unittest.main()

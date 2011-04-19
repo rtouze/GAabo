@@ -54,12 +54,12 @@ class GaaboFrame(wx.Frame):
         self.parent_panel.Layout()
 
     def get_subscriber_edition_panel(self):
-        #TODO Mettre une alerte : on ne peut pas creer un abonne avec le nom ou l'adresse vide !
         self.right_panel.Destroy()
         self.right_panel = panels.EditionPanel(self)
         self.refresh_window()
 
     def save_subscriber_action(self, event):
+        #TODO Mettre une alerte : on ne peut pas creer un abonne avec le nom ou l'adresse vide !
         self.save_subscriber()
         dialog = wx.MessageDialog(
                 None,
@@ -72,39 +72,40 @@ class GaaboFrame(wx.Frame):
 
     def save_subscriber(self, input_subscriber=None):
         if self.current_edited_subscriber is None:
-            subscriber = Subscriber()
-        else:
-            subscriber = self.current_edited_subscriber
+            self.current_edited_subscriber = Subscriber()
         field_constant_list = gaabo_constants.field_names
         for key in self.field_widget_dict.keys():
             subscriber_field_name = field_constant_list[key][0]
             #TODO ca commence a puer...
             if subscriber_field_name == 'subscription_date':
-                field_value = self.field_widget_dict[key].GetValue()
-                if field_value.strip() != '':
-                    date_array = field_value.split('/')
-                    subscriber.subscription_date = datetime.date(
+                self.__write_date(key)
+            else:
+                self.__write_field(key)
+
+        self.current_edited_subscriber.save()
+
+    def __write_date(self, key):
+        field_value = self.field_widget_dict[key].GetValue()
+        if field_value.strip() != '':
+            date_array = field_value.split('/')
+            self.current_edited_subscriber.subscription_date = datetime.date(
                             int(date_array[2]),
                             int(date_array[1]),
                             int(date_array[0])
                             )
-                else:
-                    subscriber.subscription_date = None
-                    
-            else:
-                if self.encoding == 'UTF-8':
-                    subscriber.__dict__[subscriber_field_name] = unicode(
-                            self.field_widget_dict[key].GetValue()
-                            )
-                else:
-                    subscriber.__dict__[subscriber_field_name] = unicode(
-                            self.field_widget_dict[key].GetValue(),
-                            self.encoding
-                            )
+        else:
+            self.current_edited_subscriber.subscription_date = None
 
-        subscriber.save()
-        if self.current_edited_subscriber is not None:
-            self.current_edited_subscriber = None
+    def __write_field(self, key):
+        subscriber_field_name = gaabo_constants.field_names[key][0]
+        if self.encoding == 'UTF-8':
+            self.current_edited_subscriber.__dict__[subscriber_field_name] = (
+                    unicode(self.field_widget_dict[key].GetValue())
+                    )
+        else:
+            self.current_edited_subscriber.__dict__[subscriber_field_name] = (
+                    unicode(self.field_widget_dict[key].GetValue(), self.encoding)
+                    )
 
     def show_search_form(self, event):
         self.right_panel.Destroy()
@@ -211,7 +212,7 @@ if __name__ == '__main__':
     """NOTE: configuration
     Sous windows, le home dir est identifie comme %HOMEDRIVE%\%HOMEPATH%
     Sous *nix, c'est $HOME :)"""
-    #gaabo_conf.db_name = 'test.db'
+    gaabo_conf.db_name = 'test.db'
     prog = wx.App(0)
     frame = GaaboFrame(None, 'Gaabo App')
     prog.MainLoop()

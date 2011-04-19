@@ -70,10 +70,10 @@ class Subscriber(object):
         adhoc_dao = SubscriberDAO()
         return adhoc_dao.get_end_of_subscribtion()
 
-
     def save(self):
         if self.identifier == -1:
             self.dao.save(self)
+            self.identifier = self.dao.get_new_subscriber_id()
         else:
             self.dao.update(self)
 
@@ -115,6 +115,13 @@ class SubscriberDAO(object):
         self.result = self.cursor.execute(sql, (company + '%', ))
         return self.fetch_result()
 
+    def get_new_subscriber_id(self):
+        """Get the ID of last inserted subscriber"""
+        sql = "SELECT seq FROM SQLITE_SEQUENCE WHERE name='subscribers'"
+        for row in self.cursor.execute(sql):
+            identifier = row[0]
+        return identifier
+
     def fetch_result(self):
         '''Fetch class variable result into a list of Subscriber'''
         sublist = []
@@ -155,7 +162,6 @@ class SubscriberDAO(object):
             return datetime.date(int(year), int(month), int(day))
         else:
             return None
-
 
     def save(self, subscriber):
         sql = """INSERT INTO subscribers (

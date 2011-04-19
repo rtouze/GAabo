@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tracker>
     <defects status="open">
-        <defect seferity="major" opening-date="20110403" >
-            Lorsqu'on edite un abonne puis qu'on le reedite apres confirmation,
-            un nouvel abonne est cree alors que le meme devrait etre utilise.
-        </defect>
         <defect id="2" seferity="major" opening-date="20110402" >
             Il faut une scrollbar pour la liste des abonnes a renouveler
         </defect>
@@ -18,6 +14,13 @@
         </defect>
     </defects>
     <defects status="closed">
+        <defect seferity="major" opening-date="20110403" closing-date="20110419">
+            Lorsqu'on edite un abonne puis qu'on le reedite apres confirmation,
+            un nouvel abonne est cree alors que le meme devrait etre utilise.
+        </defect>
+        <defect seferity="major" opening-date="20110416" closing-date="20110419">
+            Il y a un souci de connexion avec la db quand on cherche un user à partir de sa company
+        </defect>
         <defect id="1" seferity="minor" opening-date="20110402" closing-date="20110402" >
             Probleme de caracteres accentues de l'IHM sous Windows. Il faut
             prefixer les chaines par u pour qu'elles soient bien interpretees

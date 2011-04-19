@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <product-backlog>
     <stories type="todo">
+        <story theme="Rapport">
+            On veut un rapport donnant les abonnes a titre gratuits
+        </story>
         <story theme="Verification" priority="600" points="2">
             En tant que gestionnaire des abonnes
             Je veux que les information que je saisis soient controlees

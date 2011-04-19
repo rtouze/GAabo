@@ -12,10 +12,10 @@ class Controler(object):
 
     def get_searched_customer_list(self, lastname, company):
         subs_list = [] 
-        if lastname != '':
+        if lastname:
             subs_list.extend(Subscriber.get_subscribers_from_lastname(lastname))
-        if company != '':
-            subs_list.extend(Subscriber.get_subscribers_from_company(lastname))
+        if company:
+            subs_list.extend(Subscriber.get_subscribers_from_company(company))
         return subs_list
 
     def delete_subscriber(self, subscriber):
