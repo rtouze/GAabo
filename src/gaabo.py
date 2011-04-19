@@ -212,7 +212,7 @@ if __name__ == '__main__':
     """NOTE: configuration
     Sous windows, le home dir est identifie comme %HOMEDRIVE%\%HOMEPATH%
     Sous *nix, c'est $HOME :)"""
-    gaabo_conf.db_name = 'test.db'
+    #gaabo_conf.db_name = 'test.db'
     prog = wx.App(0)
     frame = GaaboFrame(None, 'Gaabo App')
     prog.MainLoop()
