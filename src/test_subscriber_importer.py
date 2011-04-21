@@ -4,14 +4,15 @@
 import unittest
 import sqlite3
 import os
+import datetime
+
 import subscriber_importer
 from subscriber import Subscriber
-import datetime
 import gaabo_conf
 from gaabo_exploit_db import SqliteDbOperator
 
 class TestSubscriberImporter(unittest.TestCase):
-    '''unittest class that performs the tests'''
+    """Tests for the regular subscriber importer class"""
 
     def test_emilie_feugere(self):
         '''Tests if the information of subscriber Emilie Feugere are well imported'''
