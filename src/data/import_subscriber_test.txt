@@ -4,6 +4,7 @@ date	numéros restants	à partir du numéro	HS 1	hs2	hs3	adhésion	paiement	banq
 15/11/2009	0	21	6				ch		Faullummel	Marian			LES DOUSSINS		49320	BLAISON-GOHIER	35			leslulusbleu@yahoo.fr		49			
 15/11/2009	0	21					ch	ebsco			Mediatheque Jean Falala		2 rue des Fuseliers		51095	Reims Cedex	27				OUI	51			
 15/11/2009	0	21					ch	ebsco			Bibliotheque de la ville de lyon	service des periodiques	30 bd vivier merle		69431	lyon cedex 03	27				OUI	69			
+
 09/11/2010	5	26	7				pp		Anne Debelle				Rue Dupré 63	Bruxelles 1090		Belgique	41	15,5		nannouxkinnard@advalvas.be	8				
 02/11/2010	5	26					pp		Mme BARON Marie-Christine				3 chemin du MONTPLAISIR		11390	Fontiés -Cabardés	30								
 21/11/2010	5	26					ch		PENIGUEL	AURELIE		11 IMPASSE DES FLEURS JAUNES	RUE LORY LES HAUTS		97490	STE CLOTILDE	27	13							
@@ -12,6 +13,11 @@ date	numéros restants	à partir du numéro	HS 1	hs2	hs3	adhésion	paiement	banq
 21/11/2010	5	26	7x				CH		BRAGER-PLANCHON	EMILIE-MARIE			FERME MULETIERE DU GRAND PATIS		07700	BIDON	35								
 21/11/2010	5	26					CH		Caroline More			appartement 22	25 avenue de la redoute		92600	Asnières sur Seine	30			more.caroline@orange.fr	8				
 21/11/2010	5	26					CH		fabienne leron				11 allee persee		26120	montelier 	30			vitafaby@aol.com					
+
+
+
+
+
 05/12/2010	6	27	7				ch		FerjoUX	Hélène			2 rue du Meunier	Thaire le Fagnorex	17170	ST JEAN DE LIVERSAY	35			LN.FERJOUX@FREE.FR	15				
 05/12/2010	6	27					IS ABO		MEDIATHEQUE LOUIS ARAGON		SECION ADULTES	LE CHÂTEAU	PLACE DES 3 MARTYRS		91390	MORSANG SUR ORGE	30				21				
 05/12/2010	7	27					CH EBSCO				BIBLIOTHEQUE DISCOTHEQUE		CENTRE VILLE	BP 3028	38816	GRENOBLE CEDEX 1	27				22				
