@@ -49,30 +49,50 @@ class SubscriberImporter(object):
         self.__do_common_import()
 
     def do_update_import(self):
+        """Perform an import from self.imported_file. Existing entries are
+        updated. The search of existing is the email address which should be
+        unique if it is set. If two emails are found we keep the first. If no
+        email is found, en error message is put in the log and a new subscriber
+        is created."""
         for self.line in self.imported_file:
             self.current_line+= 1
-            # TODO se baser sur l'addresse mail dans un premier temps, couple
-            # nom / premom sinon
+
             if len(self.line.strip()) > 0:
                 self.splitted_line = self.line.rstrip('\n').split('\t')
-                current_name = self.splitted_line[9]
-                subs_list = Subscriber.get_subscribers_from_lastname(current_name)
-                if len(subs_list) == 0:
-                    # TODO We try with the company (accroche toi a ton slip)
-
-                    self.sub = Subscriber()
-                elif len(subs_list) >= 1:
-                    self.sub = subs_list[0]
-                #elif len(sub_list) > 1:
-                #    message_tmp = """Abonne %s apparait %d fois dans la base, seule
-                #    la premiere occurence est mise a jour."""
-                #    self.logger.error(message_tmp % (current_name))
-                #    self.sub = sub_list[0]
+                email = self.splitted_line[20].lower()
+                subs_list = []
+                if email:
+                    subs_list = Subscriber.get_subscribers_from_email(email)
+                else:
+                    message = (
+                            u"L'abonné ligne %d n'a pas d'adresse email : "
+                            + u"il sera créé en base."
+                            )
+                    self.logger.info(message % self.current_line)
+                    
+                self.__get_sub_from_retieved(subs_list, email)
                 self.__extract_subscriber()
                 self.sub.save()
                 self.imported_lines_counter += 1
         self.logger.info('%d lignes importées' % self.imported_lines_counter)
         self.bad_file.close()
+
+    def __get_sub_from_retieved(self, retrieved_list, email):
+        """Generate a Sbuscriber from the result of db search."""
+        # TODO virer l'email et faire un throw d'exception
+        self.sub = None
+        if len(retrieved_list) == 0:
+            self.sub = Subscriber()
+        elif len(retrieved_list) == 1:
+            self.sub = retrieved_list[0]
+        elif len(retrieved_list) > 1:
+            self.sub = retrieved_list[0]
+            message = (
+                    u"L'adresse email %s est trouvée plus d'une "
+                    + u"fois dans la base. Ligne %d."
+            )
+            self.logger.error(message % (email, self.current_line))
+        return self.sub
 
     def __do_common_import(self):
         """Common method to import data from self.imported_file"""
@@ -82,6 +102,7 @@ class SubscriberImporter(object):
             self.current_line += 1
             if len(self.line.strip()) > 0:
                 self.splitted_line = self.line.rstrip('\n').split('\t')
+                self.sub.identifier = -1
                 self.__extract_subscriber()
                 self.sub.save()
                 self.imported_lines_counter += 1
@@ -92,8 +113,6 @@ class SubscriberImporter(object):
         """Build a Subscriber object from the information of a line"""
 
         # The same subscriber object is used, but it must be reinitialized
-        self.sub.identifier = -1
-
         self.__set_personal_information()
         self.__set_subscription_info()
         self.__set_ordering_info()

@@ -22,32 +22,60 @@ class TestSubscriberImporterUpdate(unittest.TestCase):
     def test_updated_subscriber(self):
         """Test that the subscriber in the db is updated"""
         subs_list = Subscriber.get_subscribers_from_lastname('feugere')
-        self.assertEqual(len(subs_list), 1, 'Bad size for sub_list')
+        self.assertEqual(len(subs_list), 1)
         feugere = subs_list[0]
         self.assertEqual(feugere.address, '67 rue de la raffiniere')
 
-    # TODO test with more than one occurence
-    # TODO test with empty name and a company
-    # TODO test with empty name and more than once company
+    def test_second_email_subscriber_not_modified(self):
+        """Test that the other subscriber with the same email than EF is not
+        modified during the import. Only the first occurence is modified."""
+        charley = Subscriber.get_subscribers_from_lastname('magne')[0]
+        self.assertFalse(charley.address)
+
 
 def main():
     """Main treatment encapsulation"""
+    __create_db()
+    __put_test_data_in_db()
+    __import_data()
+
+    unittest.main()
+
+def __create_db():
     gaabo_conf.db_name = 'test.db'
     db_ex = SqliteDbOperator()
     db_ex.remove_db()
     db_ex.create_db()
-    import_file_name = 'data/import_subscriber_test.txt'
+
+def __put_test_data_in_db():
+    __create_dummy_user()
+    __create_user_in_file()
+    __create_duplicate_email()
+
+def __create_dummy_user():
     sub = Subscriber()
     sub.lastname = 'foo'
     sub.firstname = 'bar'
     sub.save()
+
+def __create_user_in_file():
     sub = Subscriber()
     sub.lastname = 'Feugere'
     sub.firstname = 'Emilie'
+    sub.email_address = 'xavier.gicqueau@club-internet.fr'
+    sub.save()
+
+def __create_duplicate_email():
+    sub = Subscriber()
+    sub.firstname = 'charle'
+    sub.lastname = 'magne'
+    sub.email_address = 'xavier.gicqueau@club-internet.fr'
+    sub.save()
+
+def __import_data():
+    import_file_name = 'data/import_subscriber_test.txt'
     importer = SubscriberImporter(import_file_name)
     importer.do_update_import()
-
-    unittest.main()
 
 if __name__ == '__main__':
     main()

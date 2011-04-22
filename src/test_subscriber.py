@@ -197,5 +197,17 @@ class TestSubscriber(unittest.TestCase):
         ident = self.sub.identifier
         self.assertNotEqual(-1, ident)
 
+    def test_email_based_search(self):
+        """Test if we can retrieve a subscriber using its email address."""
+        self.sub.firstname = 'email'
+        self.sub.lastname = 'user'
+        email = 'email.user@foobar.com'
+        self.sub.email_address = email
+        self.sub.save()
+
+        user = Subscriber.get_subscribers_from_email(email)[0]
+        self.assertEqual(user.firstname, 'email')
+        self.assertEqual(user.lastname, 'user')
+
 if __name__ == '__main__':
     unittest.main()
