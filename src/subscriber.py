@@ -56,6 +56,11 @@ class Subscriber(object):
         return adhoc_dao.search_from_company(company)
 
     @classmethod
+    def get_subscribers_from_email(cls, email):
+        adhoc_dao = SubscriberDAO()
+        return adhoc_dao.search_from_email(email)
+
+    @classmethod
     def decrement_issues_to_receive(cls):
         adhoc_dao = SubscriberDAO()
         adhoc_dao.decrement_issues_to_receive()
@@ -97,12 +102,14 @@ class SubscriberDAO(object):
 
     def __init__(self):
         '''Initialise the dao with a database connection'''
+
         self.db_full_path = os.path.join(gaabo_conf.db_directory, gaabo_conf.db_name)
         self.conn = sqlite3.Connection(self.db_full_path)
         self.cursor = self.conn.cursor()
 
     def search_from_lastname(self, lastname):
         '''Return a list of subs from a search in the DB based on a lastname'''
+
         sql = """SELECT * FROM subscribers
         WHERE lower(lastname) LIKE lower(?)"""
         self.result = self.cursor.execute(sql, (lastname + '%', ))
@@ -110,9 +117,19 @@ class SubscriberDAO(object):
 
     def search_from_company(self, company):
         '''Return a list of subs from a search in the DB based on a company'''
+
         sql = """SELECT * FROM subscribers
         WHERE lower(company) LIKE lower(?)"""
         self.result = self.cursor.execute(sql, (company + '%', ))
+        return self.fetch_result()
+
+    def search_from_email(self, email):
+        """Return a list of subscribers from a search in the DB based on the
+        email address. *Warning:* only EXACT matches are returned"""
+
+        sql = """SELECT * FROM subscribers WHERE lower(email_address) =
+        lower(?)"""
+        self.result = self.cursor.execute(sql, (email, ))
         return self.fetch_result()
 
     def get_new_subscriber_id(self):
