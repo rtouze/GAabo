@@ -48,32 +48,6 @@ class SubscriberImporter(object):
         data."""
         self.__do_common_import()
 
-    def do_update_import(self):
-        for self.line in self.imported_file:
-            self.current_line+= 1
-            # TODO se baser sur l'addresse mail dans un premier temps, couple
-            # nom / premom sinon
-            if len(self.line.strip()) > 0:
-                self.splitted_line = self.line.rstrip('\n').split('\t')
-                current_name = self.splitted_line[9]
-                subs_list = Subscriber.get_subscribers_from_lastname(current_name)
-                if len(subs_list) == 0:
-                    # TODO We try with the company (accroche toi a ton slip)
-
-                    self.sub = Subscriber()
-                elif len(subs_list) >= 1:
-                    self.sub = subs_list[0]
-                #elif len(sub_list) > 1:
-                #    message_tmp = """Abonne %s apparait %d fois dans la base, seule
-                #    la premiere occurence est mise a jour."""
-                #    self.logger.error(message_tmp % (current_name))
-                #    self.sub = sub_list[0]
-                self.__extract_subscriber()
-                self.sub.save()
-                self.imported_lines_counter += 1
-        self.logger.info('%d lignes importées' % self.imported_lines_counter)
-        self.bad_file.close()
-
     def __do_common_import(self):
         """Common method to import data from self.imported_file"""
         self.sub = Subscriber()
