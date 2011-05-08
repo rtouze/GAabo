@@ -123,10 +123,14 @@ class EditionPanel(wx.Panel):
                             size=(200, FIELD_HEIGHT)
                             )
             elif subscriber_field_name == 'post_code':
+                post_code = self.subscriber.post_code
+                formatted_post_code = ''
+                if (unicode(post_code).isdigit() and post_code != 0):
+                    formatted_post_code = '%05d' % post_code
                 self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
                         self,
                         -1,
-                        '%05d' % self.subscriber.post_code,
+                        formatted_post_code,
                         size=(200, FIELD_HEIGHT)
                         )
             else:
