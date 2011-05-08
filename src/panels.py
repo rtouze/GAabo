@@ -122,6 +122,13 @@ class EditionPanel(wx.Panel):
                             subscr_date.strftime('%d/%m/%Y'),
                             size=(200, FIELD_HEIGHT)
                             )
+            elif subscriber_field_name == 'post_code':
+                self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
+                        self,
+                        -1,
+                        '%05d' % self.subscriber.post_code,
+                        size=(200, FIELD_HEIGHT)
+                        )
             else:
                 #TODO il faudra faire varier selon les types de champ
                 self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(

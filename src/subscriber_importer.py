@@ -128,7 +128,7 @@ class SubscriberImporter(object):
         self.sub.name_addition = self.splitted_line[12]
         self.sub.address = self.splitted_line[13]
         self.sub.address_addition = self.splitted_line[14]
-        self.sub.post_code = self.splitted_line[15]
+        self.sub.post_code = self.__field_to_int(self.splitted_line[15], 'post_code')
         self.sub.city = self.splitted_line[16]
 
     def __set_subscription_info(self):

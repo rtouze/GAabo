@@ -60,12 +60,12 @@ class RoutageExportTest(unittest.TestCase):
         self.assertEquals(splitted_line[15], u'\n')
 
     def test_subscriber_without_remaining_issue(self):
-        '''Test if a subscriber that has no issue left will not receive a free
-        number :)'''
+        '''Test if a subscriber that has no issue left will not receive a free number :)'''
         subscriber = Subscriber()
         subscriber.lastname = 'toto'
         subscriber.issues_to_receive = 1
         subscriber.save()
+        subscriber = Subscriber()
         subscriber.lastname = 'tata'
         subscriber.issues_to_receive = 0
         subscriber.save()
@@ -90,14 +90,14 @@ class RoutageExportTest(unittest.TestCase):
         self.assertEquals(has_tata, 0, 'tata found')
 
     def test_export_for_special_issues(self):
-        '''Test the function to export subscriber list to send special
-        issue'''
+        '''Test the function to export subscriber list to send special issue'''
         subscriber = Subscriber()
         subscriber.lastname = 'toto'
         subscriber.hors_serie1 = 1
         subscriber.hors_serie2 = 0
         subscriber.hors_serie3 = 0
         subscriber.save()
+        subscriber = Subscriber()
         subscriber.lastname = 'tata'
         subscriber.hors_serie1 = 0
         subscriber.hors_serie2 = 1
@@ -109,8 +109,7 @@ class RoutageExportTest(unittest.TestCase):
         self.__test_presence_toto_tata()
 
     def test_field_length(self):
-        '''test if the fields in the output file does not exceed character
-        limits'''
+        '''test if the fields in the output file does not exceed character limits'''
         big_string = ''.join(['b' for i in xrange(1, 40)])
         subscriber = Subscriber()
         subscriber.lastname = big_string
@@ -176,6 +175,7 @@ class RoutageExportTest(unittest.TestCase):
         self.assertTrue(len(splitted_line[7]) <= 32 and len(splitted_line[7]) > 0)
 
 
+
     def __read_fist_line_of_export(self):
         self.exporter.do_export()
         file_pointer = codecs.open(self.test_file, 'r', 'utf-8')
@@ -190,6 +190,25 @@ class RoutageExportTest(unittest.TestCase):
         subscriber.save()
         line = self.__read_fist_line_of_export()
         self.assertTrue(line is not None)
+
+    def test_5_digit_post_code(self):
+        """Checks that the exported post_code is always written with 5 digits,
+        even if the first one is 0."""
+        subscriber = Subscriber()
+        subscriber.post_code = 1300
+        subscriber.save()
+        line = self.__read_fist_line_of_export()
+        splitted_line = line.split('\t')
+        self.assertEqual(splitted_line[8], '01300')
+
+    def test_noexception_with_emtpy_string_postcode(self):
+        """Test that former empty postcode leads to no export error exception"""
+        subscriber = Subscriber()
+        subscriber.lastname = 'toto'
+        subscriber.post_code = ''
+        subscriber.save()
+        line = self.__read_fist_line_of_export()
+        self.assertEquals(line.split('\t')[8], '')
 
     def tearDown(self):
         '''Delete generated file'''

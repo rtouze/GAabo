@@ -76,7 +76,12 @@ class RoutageExporter(object):
                 line.append(reformatted_address[0])
                 line.append(reformatted_address[1])
                 line.append(reformatted_address[2])
-                line.append(unicode(row[6])[0:5])
+                #TODO
+                if (unicode(row[6]).isdigit() and row[6] != 0):
+                    postcode = '%05d' % row[6] 
+                else:
+                    postcode = ''
+                line.append(postcode[0:5])
                 line.append(self.format_string(row[7][0:26]))
                 line.append('')
                 #TODO celle-ci doit etre le mode d'expedition
