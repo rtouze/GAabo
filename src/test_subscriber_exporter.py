@@ -47,8 +47,8 @@ class RoutageExportTest(unittest.TestCase):
         self.assertEquals(splitted_line[2], u'ANNE DEBELLE')
         self.assertEquals(splitted_line[3], u'')
         self.assertEquals(splitted_line[4], u'')
-        self.assertEquals(splitted_line[5], u'RUE DUPRE 63 BRUXELLES 1090')
-        self.assertEquals(splitted_line[6], u'')
+        self.assertEquals(splitted_line[5], u'RUE DUPRE 63')
+        self.assertEquals(splitted_line[6], u'BRUXELLES 1090')
         self.assertEquals(splitted_line[7], u'')
         self.assertEquals(splitted_line[8], u'')
         self.assertEquals(splitted_line[9], u'BELGIQUE')
@@ -170,11 +170,23 @@ class RoutageExportTest(unittest.TestCase):
         subscriber.save()
         line = self.__read_fist_line_of_export()
         splitted_line = line.split('\t')
-        self.assertTrue(len(splitted_line[5]) <= 32 and len(splitted_line[5]) > 0)
-        self.assertTrue(len(splitted_line[6]) <= 32 and len(splitted_line[6]) > 0)
-        self.assertTrue(len(splitted_line[7]) <= 32 and len(splitted_line[7]) > 0)
+        self.assertEqual(splitted_line[5], '3456713 AVENUE DE LA')
+        self.assertEqual(splitted_line[6], 'MEDITERRANEE EN ABSENCE DE LOL')
+        self.assertEqual(splitted_line[7], 'AVEC PLEIN DE CHOSES DEDANS')
 
-
+    def test_real_address_splitted_in_3(self):
+        """Test for address splitting but with a real address from the export
+        file"""
+        subscriber = Subscriber()
+        subscriber.address = 'QUARTIER LES BIZETS'
+        subscriber.address_addition = 'PLAN DES PENNES'
+        subscriber.save()
+        line = self.__read_fist_line_of_export()
+        splitted_line = line.split('\t')
+        # If field one is less than 32 char and field 2 less than 32 char, no
+        # reorg
+        self.assertEqual(splitted_line[5], 'QUARTIER LES BIZETS')
+        self.assertEqual(splitted_line[6], 'PLAN DES PENNES')
 
     def __read_fist_line_of_export(self):
         self.exporter.do_export()

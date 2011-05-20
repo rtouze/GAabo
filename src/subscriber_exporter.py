@@ -73,9 +73,9 @@ class RoutageExporter(object):
                 line.append(self.format_string(row[0][0:32]))
                 line.append(self.format_string(row[1][0:20]))
                 line.append(self.format_string(row[2][0:32]))
-                line.append(reformatted_address[0])
-                line.append(reformatted_address[1])
-                line.append(reformatted_address[2])
+                line.append(reformatted_address[0][0:32])
+                line.append(reformatted_address[1][0:32])
+                line.append(reformatted_address[2][0:32])
                 #TODO
                 if (unicode(row[6]).isdigit() and row[6] != 0):
                     postcode = '%05d' % row[6] 
@@ -107,6 +107,9 @@ class RoutageExporter(object):
 
     def format_address(self, row):
         '''Put address in 3 32 char length token instead of 2'''
+        if len(row[4]) <= 32 and len(row[5]) <= 32:
+            return [self.format_string(row[4]), self.format_string(row[5]), '']
+
         formatted_address = ['', '', '']
         long_address = ' '.join([row[4], row[5]])
         tokens = long_address.split()
@@ -118,6 +121,7 @@ class RoutageExporter(object):
                 formatted_address[i] = ' '.join([current, self.format_string(token)])
             else:
                 i += 1
+                formatted_address[i] = self.format_string(token)
         for i in xrange(0, 2):
             formatted_address[i] = formatted_address[i].strip()
         return formatted_address
