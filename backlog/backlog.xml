@@ -1,13 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <product-backlog>
     <stories type="todo">
-        <story theme="Rapport">
+        <story theme="Extraction">
+            Je veux exporter la liste des abonnes allant recevoir un courier
+            pour leur reabonnement pour la transmettre au routeur.
+        </story>
+        <story theme="Navigation">
+            Je veux naviguer dans les boutons avec des raccourcis claviers
+        </story>
+        <story theme="Recherche">
+            Je veux chercher les abonnes a partir de leur adresse email
+        </story>
+        <story theme="Suivi abonnements" priority="500" points="2">
+            Entant que gestionnaire des abonnes
+            Je veux pouvoir envoyer un mail de reabonnements aux abonnes en fin d'abonnement
+            Pour que ceux-ci se reabonnent
+        </story>
+        <story theme="Rapport" priority="100" points="1">
             On veut un rapport donnant les abonnes a titre gratuits
         </story>
         <story theme="Verification" priority="600" points="2">
             En tant que gestionnaire des abonnes
             Je veux que les information que je saisis soient controlees
             Pour eviter de mettre des donnees au format errone dans la base
+        </story>
         <story theme="Extraction" priority="400" points="3">
             En tant que gestionnaire des abonnes
             Je veux extraire la listes des abonnes au format CSV

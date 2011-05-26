@@ -35,15 +35,3 @@ class Controler(object):
         exporter = RoutageExporter(file_path)
         exporter.do_export_special_issue()
 
-    def get_ending_subscription_list(self):
-        output = []
-        for subscriber in Subscriber.get_end_of_subscribtion():
-            output.append('\t'.join((
-                subscriber.lastname,
-                subscriber.firstname,
-                subscriber.company,
-                subscriber.email_address,
-                '%d numero a recevoir' % subscriber.issues_to_receive
-                ))) 
-        return output
-

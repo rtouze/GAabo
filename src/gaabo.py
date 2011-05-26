@@ -188,26 +188,6 @@ class GaaboFrame(wx.Frame):
             exported_file_path = browser.GetPath()
             self.show_exporter_panel(exported_file_path)
 
-    def show_ending_subscription(self, event):
-        #TODO : mettre une scrollbar
-        subscriber_list = self.controler.get_ending_subscription_list()
-        self.right_panel.Destroy()
-        self.right_panel = wx.Panel(self.parent_panel, -1)
-        box = wx.BoxSizer(wx.VERTICAL)
-        if len(subscriber_list) > 0:
-            box.Add(wx.StaticText(self.right_panel, -1, u'Abonnés en fin d\'abonnement:\n'))
-        else:
-            box.Add(wx.StaticText(self.right_panel, -1, u'Pas d\'abonnés en fin d\'abonnement.'))
-        box.Add(wx.TextCtrl(
-            self.right_panel,
-            -1,
-            '\n'.join(subscriber_list),
-            size=(500, self.FIELD_HEIGHT * len(subscriber_list)),
-            style=wx.TE_MULTILINE
-            ))
-        self.right_panel.SetSizer(box)
-        self.refresh_window()
-
 if __name__ == '__main__':
     """NOTE: configuration
     Sous windows, le home dir est identifie comme %HOMEDRIVE%\%HOMEPATH%

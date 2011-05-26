@@ -24,21 +24,18 @@ class MenuBar(wx.Panel):
                 frame.SPECIAL_ISSUE_BTN_ID,
                 u'Expédier un hors-serie'
                 )
-        button_ending_sub = wx.Button(self, -1, u'Abonnés en fin d\'abonnement')
 
-        menu_buttons_grid = wx.GridSizer(5, 1, 10, 0)
+        menu_buttons_grid = wx.GridSizer(4, 1, 10, 0)
         menu_buttons_grid.Add(button_create)
         menu_buttons_grid.Add(button_modify)
         menu_buttons_grid.Add(button_send_issue)
         menu_buttons_grid.Add(button_send_special_issue)
-        menu_buttons_grid.Add(button_ending_sub)
         self.SetSizer(menu_buttons_grid)
 
         frame.Bind(wx.EVT_BUTTON, frame.show_subscriber_creation_form, id=button_create.GetId())
         frame.Bind(wx.EVT_BUTTON, frame.show_search_form, id=button_modify.GetId())
         frame.Bind(wx.EVT_BUTTON, frame.show_empty_exporter_panel, id=button_send_issue.GetId())
         frame.Bind(wx.EVT_BUTTON, frame.show_empty_exporter_panel, id=frame.SPECIAL_ISSUE_BTN_ID)
-        frame.Bind(wx.EVT_BUTTON, frame.show_ending_subscription, id=button_ending_sub.GetId())
 
 #####
 
@@ -63,8 +60,12 @@ class EditionPanel(wx.Panel):
         self.generate_pair_list()
 
         for pair in self.pairs:
-            grid.Add(pair[0])
-            grid.Add(pair[1])
+            grid.Add(pair[0], flag=wx.ALIGN_CENTER_VERTICAL)
+            grid.Add(pair[1], flag=wx.ALIGN_CENTER_VERTICAL)
+
+        # TODO Exemples RadioButtons
+        # self.rb1 = wx.RadioButton(panel, -1, 'Value A', (10, 10), style=wx.RB_GROUP)
+        # self.rb2 = wx.RadioButton(panel, -1, 'Value B', (10, 30)) self.rb3 =
 
         box.Add(grid)
         box.Add(self.generate_button_box())

@@ -1,42 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tracker>
     <defects status="open">
-        <defect id="9" severity="minor" opening-date="20110508" >
-            Mettre en place un centrage vertical des cellules dans le
-            formulaire de saisie.
-        </defect>
-        <defect id="2" severity="major" opening-date="20110402" >
-            Il faut une scrollbar pour la liste des abonnes a renouveler
-        </defect>
-        <defect id="3" severity="minor" opening-date="20110402" >
+        <defect severity="minor" opening-date="20110402" >
             Pour les champs "membre" et "stickers envoye", mettre un bouton
             radio et pas un champ texte.
         </defect>
-        <defect id="5" severity="minor" opening-date="20110402" >
+        <defect severity="minor" opening-date="20110402" >
             La gestion de l'encodage des inputs se fait en separant UTF-8 du
             reste. Il faut trouver qqc de plus elegant.
         </defect>
     </defects>
     <defects status="closed">
-        <defect id="8" severity="minor" opening-date="20110421" closing-date="20110508" >
+        <defect severity="minor" opening-date="20110508" closing-date="20110526" >
+            Mettre en place un centrage vertical des cellules dans le
+            formulaire de saisie.
+        </defect>
+        <defect severity="major" opening-date="20110526" closing-date="20110526" >
+            Virer la fonctionnalite d'affichage des abonnes en fin
+            d'abonnement, remplacer par un export (cf backlog).
+        </defect>
+        <defect severity="major" opening-date="20110402" closing-date="20110526" >
+            Il faut une scrollbar pour la liste des abonnes a renouveler
+        </defect>
+        <defect severity="minor" opening-date="20110421" closing-date="20110508" >
             Si le code postal commence par un 0, il est affiché sur 4 digits au
             lieu de 5. Valable dans le formulaire d'entree et a l'export.
         </defect>
-        <defect id="1" severity="minor" opening-date="20110402" closing-date="20110402" >
+        <defect severity="minor" opening-date="20110402" closing-date="20110402" >
             Probleme de caracteres accentues de l'IHM sous Windows. Il faut
             prefixer les chaines par u pour qu'elles soient bien interpretees
         </defect>
-        <defect id="4" severity="minor" opening-date="20110402" closing-date="20110408">
+        <defect severity="minor" opening-date="20110402" closing-date="20110408">
             Faire les recherche de nom et de company avec un like, ce sera plus simple
         </defect>
-        <defect id="6" severity="major" opening-date="20110402" closing-date="20110402" >
+        <defect severity="major" opening-date="20110402" closing-date="20110402" >
             Le format de date dans l'IHM est yyyy-mm-dd. Quand on l'entre,
             subscriber.py attend dd/mm/yyyy. Preciser le format dans l'IHM.
         </defect>
-        <defect id="7" severity="major" opening-date="20110416" closing-date="20110419">
+        <defect severity="major" opening-date="20110416" closing-date="20110419">
             Il y a un souci de connexion avec la db quand on cherche un user à partir de sa company
         </defect>
-        <defect id="8" severity="major" opening-date="20110403" closing-date="20110419">
+        <defect severity="major" opening-date="20110403" closing-date="20110419">
             Lorsqu'on edite un abonne puis qu'on le reedite apres confirmation,
             un nouvel abonne est cree alors que le meme devrait etre utilise.
         </defect>
