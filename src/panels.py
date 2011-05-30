@@ -176,31 +176,47 @@ class SearchPanel(wx.Panel):
         self.box.Add(wx.StaticText(self, -1, u'Entrer les critères de recherche :\n'))
         grid = wx.FlexGridSizer(3, 2, 5, 5)
 
-        grid.Add(wx.StaticText(self, -1, 'Nom de famille'), flag=wx.ALIGN_CENTER_VERTICAL)
-        if len(self.frame.searched_list) < 1:
-            self.frame.searched_name_in = wx.TextCtrl(self, -1, size=(200, FIELD_HEIGHT))
-        else:
-            self.frame.searched_name_in = wx.TextCtrl(self, -1, self.frame.searched_list[0], size=(200, FIELD_HEIGHT))
-        grid.Add(self.frame.searched_name_in, flag=wx.ALIGN_CENTER_VERTICAL)
+        self.__add_name_search_field(grid)
 
-        grid.Add(wx.StaticText(self, -1, u'Nom société'), flag=wx.ALIGN_CENTER_VERTICAL)
-        if len(self.frame.searched_list) < 2:
-            self.frame.searched_company_in = wx.TextCtrl(self, -1, size=(200, FIELD_HEIGHT))
-        else:
-            self.frame.searched_company_in = wx.TextCtrl(self, -1, self.frame.searched_list[1], size=(200, FIELD_HEIGHT))
-        grid.Add(self.frame.searched_company_in, flag=wx.ALIGN_CENTER_VERTICAL)
+        self.__add_company_search_field(grid)
 
-        grid.Add(wx.StaticText(self, -1, u'Adresse email'), flag=wx.ALIGN_CENTER_VERTICAL)
-        if len(self.frame.searched_list) < 3:
-            self.frame.searched_email_in = wx.TextCtrl(self, -1, size=(200, FIELD_HEIGHT))
-        else:
-            self.frame.searched_email_in = wx.TextCtrl(self, -1, self.frame.searched_list[2], size=(200, FIELD_HEIGHT))
-        grid.Add(self.frame.searched_email_in, flag=wx.ALIGN_CENTER_VERTICAL)
+        self.__add_email_search_field(grid)
 
         self.box.Add(grid)
         search_button = wx.Button(self, -1, u'Rechercher')
         self.frame.Bind(wx.EVT_BUTTON, self.frame.search_subscriber, id=search_button.GetId())
         self.box.Add(search_button)
+
+    def __add_name_search_field(self, grid):
+        grid.Add(wx.StaticText(self, -1, 'Nom de famille'), flag=wx.ALIGN_CENTER_VERTICAL)
+        self.frame.searched_name_in = self.__get_common_search_field(1)
+        grid.Add(self.frame.searched_name_in, flag=wx.ALIGN_CENTER_VERTICAL)
+
+    def __add_company_search_field(self, grid):
+        grid.Add(wx.StaticText(self, -1, u'Nom société'), flag=wx.ALIGN_CENTER_VERTICAL)
+        self.frame.searched_company_in = self.__get_common_search_field(2)
+        grid.Add(self.frame.searched_company_in, flag=wx.ALIGN_CENTER_VERTICAL)
+
+    def __add_email_search_field(self, grid):
+        grid.Add(wx.StaticText(self, -1, u'Adresse email'), flag=wx.ALIGN_CENTER_VERTICAL)
+        self.frame.searched_email_in = self.__get_common_search_field(3)
+        grid.Add(self.frame.searched_email_in, flag=wx.ALIGN_CENTER_VERTICAL)
+
+    def __get_common_search_field(self, field_position):
+        """We assume that field_position is > 0. No control implemented."""
+        sizing_pair = (200, FIELD_HEIGHT)
+        field_index = field_position - 1
+
+        if len(self.frame.searched_list) < field_position:
+            field = wx.TextCtrl( self, -1, size=sizing_pair)
+        else:
+            field = wx.TextCtrl(
+                    self,
+                    -1,
+                    self.frame.searched_list[field_index],
+                    size=sizing_pair
+                    )
+        return field
 
     def add_result(self, subscriber_list):
         """Public method to add the result part made of the subscribers objects

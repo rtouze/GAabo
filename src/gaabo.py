@@ -16,12 +16,16 @@ class GaaboFrame(wx.Frame):
     SPECIAL_ISSUE_BTN_ID = 1
 
     def __init__(self, parent, title):
+        #TODO Too many fields in this class
         wx.Frame.__init__(self, parent, title=title, size=(1024, 800))
         self.encoding = sys.getfilesystemencoding()
         self.controler = Controler()
         # List of the fields used to edit a subscriber
         self.field_widget_dict = {} 
         self.searched_list = []
+        self.searched_name_in = None
+        self.searched_company_in = None
+        self.searched_email_in = None
         #TODO mettre le nombre d'abonnes en base dans la zone de notif
         self.status_bar = self.CreateStatusBar()
         self.status_bar.SetFieldsCount(2)

@@ -8,9 +8,6 @@
         <story theme="Navigation">
             Je veux naviguer dans les boutons avec des raccourcis claviers
         </story>
-        <story theme="Recherche">
-            Je veux chercher les abonnes a partir de leur adresse email
-        </story>
         <story theme="Suivi abonnements" priority="500" points="2">
             Entant que gestionnaire des abonnes
             Je veux pouvoir envoyer un mail de reabonnements aux abonnes en fin d'abonnement
@@ -51,6 +48,9 @@
         </story>
     </stories>
     <stories type="done">
+        <story theme="Recherche">
+            Je veux chercher les abonnes a partir de leur adresse email
+        </story>
         <story theme="GestionAbonnes" priority="1000" points="3">
             En tant que gestionnaire des abonnés
             je veux pouvoir saisir les information abonnés
