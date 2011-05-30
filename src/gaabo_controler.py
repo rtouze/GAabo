@@ -10,12 +10,14 @@ class Controler(object):
     def __init__(self):
         pass
 
-    def get_searched_customer_list(self, lastname, company):
+    def get_searched_customer_list(self, lastname, company, email):
         subs_list = [] 
         if lastname:
             subs_list.extend(Subscriber.get_subscribers_from_lastname(lastname))
         if company:
             subs_list.extend(Subscriber.get_subscribers_from_company(company))
+        if email:
+            subs_list.extend(Subscriber.get_subscribers_from_email(email))
         return subs_list
 
     def delete_subscriber(self, subscriber):

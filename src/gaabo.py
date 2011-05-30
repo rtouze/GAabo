@@ -21,7 +21,7 @@ class GaaboFrame(wx.Frame):
         self.controler = Controler()
         # List of the fields used to edit a subscriber
         self.field_widget_dict = {} 
-        self.searched_pair = []
+        self.searched_list = []
         #TODO mettre le nombre d'abonnes en base dans la zone de notif
         self.status_bar = self.CreateStatusBar()
         self.status_bar.SetFieldsCount(2)
@@ -113,18 +113,21 @@ class GaaboFrame(wx.Frame):
         self.refresh_window()
 
     def search_subscriber(self, event):
-        self.searched_pair = []
+        self.searched_list = []
         #TODO c'est moche, voir s'il n'y a pas une meilleur facon
         if self.encoding == 'UTF-8':
-            self.searched_pair.append(self.searched_name_in.GetValue())
-            self.searched_pair.append(self.searched_company_in.GetValue())
+            self.searched_list.append(self.searched_name_in.GetValue())
+            self.searched_list.append(self.searched_company_in.GetValue())
+            self.searched_list.append(self.searched_email_in.GetValue())
         else:
-            self.searched_pair.append(unicode(self.searched_name_in.GetValue(), self.encoding))
-            self.searched_pair.append(unicode(self.searched_company_in.GetValue(), self.encoding))
+            self.searched_list.append(unicode(self.searched_name_in.GetValue(), self.encoding))
+            self.searched_list.append(unicode(self.searched_company_in.GetValue(), self.encoding))
+            self.searched_list.append(unicode(self.searched_email_in.GetValue(), self.encoding))
 
         subscriber_list = self.controler.get_searched_customer_list(
-            self.searched_pair[0],
-            self.searched_pair[1],
+            self.searched_list[0],
+            self.searched_list[1],
+            self.searched_list[2]
                 )
         self.get_search_panel_with_result(subscriber_list)
 

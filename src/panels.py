@@ -174,19 +174,29 @@ class SearchPanel(wx.Panel):
     def generate_search_box(self):
         """Generate the search part of the search panel"""
         self.box.Add(wx.StaticText(self, -1, u'Entrer les critères de recherche :\n'))
-        grid = wx.FlexGridSizer(2, 2, 5, 5)
+        grid = wx.FlexGridSizer(3, 2, 5, 5)
+
         grid.Add(wx.StaticText(self, -1, 'Nom de famille'), flag=wx.ALIGN_CENTER_VERTICAL)
-        if len(self.frame.searched_pair) < 1:
+        if len(self.frame.searched_list) < 1:
             self.frame.searched_name_in = wx.TextCtrl(self, -1, size=(200, FIELD_HEIGHT))
         else:
-            self.frame.searched_name_in = wx.TextCtrl(self, -1, self.frame.searched_pair[0], size=(200, FIELD_HEIGHT))
+            self.frame.searched_name_in = wx.TextCtrl(self, -1, self.frame.searched_list[0], size=(200, FIELD_HEIGHT))
         grid.Add(self.frame.searched_name_in, flag=wx.ALIGN_CENTER_VERTICAL)
+
         grid.Add(wx.StaticText(self, -1, u'Nom société'), flag=wx.ALIGN_CENTER_VERTICAL)
-        if len(self.frame.searched_pair) < 2:
+        if len(self.frame.searched_list) < 2:
             self.frame.searched_company_in = wx.TextCtrl(self, -1, size=(200, FIELD_HEIGHT))
         else:
-            self.frame.searched_company_in = wx.TextCtrl(self, -1, self.frame.searched_pair[1], size=(200, FIELD_HEIGHT))
+            self.frame.searched_company_in = wx.TextCtrl(self, -1, self.frame.searched_list[1], size=(200, FIELD_HEIGHT))
         grid.Add(self.frame.searched_company_in, flag=wx.ALIGN_CENTER_VERTICAL)
+
+        grid.Add(wx.StaticText(self, -1, u'Adresse email'), flag=wx.ALIGN_CENTER_VERTICAL)
+        if len(self.frame.searched_list) < 3:
+            self.frame.searched_email_in = wx.TextCtrl(self, -1, size=(200, FIELD_HEIGHT))
+        else:
+            self.frame.searched_email_in = wx.TextCtrl(self, -1, self.frame.searched_list[2], size=(200, FIELD_HEIGHT))
+        grid.Add(self.frame.searched_email_in, flag=wx.ALIGN_CENTER_VERTICAL)
+
         self.box.Add(grid)
         search_button = wx.Button(self, -1, u'Rechercher')
         self.frame.Bind(wx.EVT_BUTTON, self.frame.search_subscriber, id=search_button.GetId())
