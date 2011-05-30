@@ -58,7 +58,7 @@ class TestSubscriber(unittest.TestCase):
         self.assertEqual(self.sub.firstname, 'Toto')
 
     def test_get_subscribers_from_company(self):
-        '''Retrieve a subsriber list company name'''
+        '''Retrieve a subsriber list using a company name'''
         sql = """INSERT INTO subscribers (company, name_addition)
         VALUES ('Google', 'IsNotEvil')"""
         self.cursor.execute(sql)
@@ -68,7 +68,7 @@ class TestSubscriber(unittest.TestCase):
         self.assertEqual(self.sub.name_addition, 'IsNotEvil')
 
     def test_get_subscribers_from_company_like(self):
-        '''Retrieve a subsriber list company name'''
+        '''Retrieve a subsriber list using the beginning of company name'''
         sql = """INSERT INTO subscribers (company, name_addition)
         VALUES ('REDHAT', 'IsTrankil')"""
         self.cursor.execute(sql)
