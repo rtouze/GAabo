@@ -138,6 +138,88 @@ class RoutageExporter(object):
 
 #####
 
+class ReSubscribeExporter(object):
+    """This class extact a CSV file for the re6subscribing mailing campaign"""
+
+    QUERY = """SELECT firstname, lastname, company, address, address_addition,
+    post_code, city FROM subscribers WHERE issues_to_receive = 0"""
+
+    def __init__(self, file_path):
+        """This constructor open a file descriptor to realize the export"""
+        self.db_file = os.path.join(gaabo_conf.db_directory, gaabo_conf.db_name)
+        self.export_file = codecs.open(file_path, 'w', 'utf-8')
+        self.conn = None
+
+    def do_export(self):
+        """Perform the export in the file given as parameter of object
+        constructor"""
+        self.__write_header()
+        self.__write_body()
+        self.__close_resources()
+
+    def __write_header(self):
+        """Write header line in export file"""
+        header = u'Destinataire;Adresse;Complement Adresse;' + \
+                u'Code Postal;Ville / Pays\n'
+        self.export_file.write(header)
+
+    def __write_body(self):
+        """Write the body of the export file"""
+        self.conn = sqlite3.Connection(self.db_file)
+        for row in self.__execute_query():
+            self.__write_in_file(row)
+
+    def __execute_query(self):
+        """Execute the query that provides the data to the export file"""
+        cursor = self.conn.cursor()
+        return cursor.execute(self.QUERY)
+
+    def __write_in_file(self, row):
+        """Write a data row in the file"""
+        line = []
+        line.append(self.__get_recipient(row))
+        line.append(self.__get_address(row))
+        line.append(self.__get_address_addition(row))
+        line.append(self.__get_post_code(row))
+        line.append(self.__get_city(row))
+        self.export_file.write(';'.join(line) + '\n') 
+
+    def __get_recipient(self, row):
+        """Extract recipient field from a data row"""
+        firstname = row[0].upper()
+        lastname = row[1].upper()
+        company = row[2].upper()
+
+        if lastname == '' and company != 0:
+            return company
+        elif company != '':
+            return '%s, POUR %s %s' % (company, firstname, lastname)
+        else:
+            return ' '.join([firstname, lastname, company]).strip()
+
+    def __get_address(self, row):
+        return row[3].upper()
+
+    def __get_address_addition(self, row):
+        return row[4].upper()
+
+    def __get_city(self, row):
+        return row[6].upper()
+
+    def __get_post_code(self, row):
+        postcode = row[5]
+        if postcode != 0:
+            return str(postcode)
+        else:
+            return ''
+
+    def __close_resources(self):
+        """Close every resource needed by the object"""
+        self.conn.close()
+        self.export_file.close()
+
+#####
+
 class HtmlExporter(object):
     def __init__(self, file_name):
         self.db_file = os.path.join(gaabo_conf.db_directory, gaabo_conf.db_name)

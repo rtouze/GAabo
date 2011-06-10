@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <product-backlog>
     <stories type="todo">
-        <story theme="Extraction">
-            Je veux exporter la liste des abonnes allant recevoir un courier
-            pour leur reabonnement pour la transmettre au routeur.
-        </story>
         <story theme="Navigation">
             Je veux naviguer dans les boutons avec des raccourcis claviers
         </story>
@@ -48,6 +44,10 @@
         </story>
     </stories>
     <stories type="done">
+        <story theme="Extraction">
+            Je veux exporter la liste des abonnes allant recevoir un courier
+            pour leur reabonnement pour la transmettre au routeur.
+        </story>
         <story theme="Recherche">
             Je veux chercher les abonnes a partir de leur adresse email
         </story>
