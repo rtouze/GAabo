@@ -220,52 +220,74 @@ class ReSubscribeExporter(object):
 
 #####
 
-class HtmlExporter(object):
+import csv
+
+class CsvExporter(object):
+    """This class allozs to export the whole database as a CSV"""
+
+    QUERY = """SELECT firstname, lastname, city,
+    subscription_price, membership_price, subscription_date
+    FROM subscribers"""
+
+    SEPARATOR = ';'
+    EOL = '\r\n'
+
+    # TODO le module csv est merdique avec utf-8. Il faut revenir a la vieille
+    # methode  pour faire passer les tests.
+
     def __init__(self, file_name):
-        self.db_file = os.path.join(gaabo_conf.db_directory, gaabo_conf.db_name)
-        self.file_desc = codecs.open(file_name, 'w', 'utf-8')
+        self.export_file = codecs.open(file_name, 'w', 'utf-8')
+        self.csv_writer = csv.writer(self.export_file, delimiter=';')
 
     def do_export(self):
-        self.__init_file()
-        self.file_desc.write('<tr>\n')
-        sql_fields = [] 
-        for pair in gaabo_constants.field_names:
-            self.file_desc.write('<th>%s</th>\n' % pair[1])
-            sql_fields.append(pair[0])
-        self.file_desc.write('</tr>\n')
+        self.write_header()
+        self.write_rows()
+        self.close_resources()
 
-        sql_field_str = ', '.join(sql_fields)
-        sql = 'SELECT %s FROM subscribers' % sql_field_str
+    def write_header(self):
+        header_list = []
+        header_list.append('nom')
+        header_list.append('ville/pays')
+        header_list.append('prix abonnement')
+        header_list.append('prix cottisation')
+        header_list.append('date abonnement')
 
-        conn = sqlite3.Connection(self.db_file)
-        cursor = conn.cursor()
-        result = cursor.execute(sql)
-        for row in result:
-            self.file_desc.write('<tr>\n')
-            for field in row:
-                self.file_desc.write('<td>')
-                self.file_desc.write(unicode(field))
-                self.file_desc.write('</td>\n')
-            self.file_desc.write('</tr>\n')
-        cursor.close()
-        conn.close()
-        self.__close_file()
+        self.print_list(header_list)
 
-    def __init_file(self):
-        header = html_tools.html_header('Test export html')
-        header += '''<h1>Test export des donn&eacute;es</h1>\n<table>'''
-        self.file_desc.write(header)
+    def print_list(self, list_to_print):
+        self.export_file.write(self.SEPARATOR.join(list_to_print))
+        self.export_file.write(self.EOL)
 
-    def __close_file(self):
-        footer = '''</table>\n'''
-        footer += html_tools.html_footer
-        self.file_desc.write(footer)
-        self.file_desc.close()
+    def write_rows(self):
+        for row in self.get_rows():
+            self.print_current(row)
 
-if __name__ == '__main__': 
-    print 'Creation du fichier test.html a partir de la base de test...'
-    gaabo_conf.db_name = 'ga.db'
-    exporter = HtmlExporter('ga.html')
-    exporter.do_export()
-    print 'Fait.'
+    def get_rows(self):
+        db_file = os.path.join(gaabo_conf.db_directory, gaabo_conf.db_name)
+        self.conn = sqlite3.Connection(db_file)
+        cursor = self.conn.cursor()
+        return cursor.execute(self.QUERY)
 
+    def print_current(self, row):
+        printed_row_array = []
+        printed_row_array.append(unicode(' '.join([row[0], row[1]])))
+        printed_row_array.append(unicode(row[2]))
+        printed_row_array.append(unicode(row[3]))
+        printed_row_array.append(unicode(row[4]))
+        printed_row_array.append(date_from_iso(row[5]).strftime('%d/%m/%Y'))
+
+        self.print_list(printed_row_array)
+
+    def close_resources(self):
+        self.export_file.close()
+        self.conn.close()
+
+# TODO deja dans le subscriber DAO, a modifier
+import datetime
+
+def date_from_iso(iso_date_string):
+    if iso_date_string is not None:
+        (year, month, day) = iso_date_string.split('-')
+        return datetime.date(int(year), int(month), int(day))
+    else:
+        return None
