@@ -4,9 +4,10 @@
 from subscriber_exporter import CsvExporter
 
 def main():
-    print u'Extraction des abonnés dans ../subscriber_list.csv...'
+    file_name = '../subscriber_list.csv'
+    print u'Extraction des abonnés dans %s...' % file_name
 
-    exporter = CsvExporter('../resubscription.csv')
+    exporter = CsvExporter(file_name)
     exporter.do_export()
 
     print 'Fait.'

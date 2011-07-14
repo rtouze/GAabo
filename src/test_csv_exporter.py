@@ -31,8 +31,12 @@ class CsvExporterTest(unittest.TestCase):
         """Test the heading line of the file"""
         self.exporter.do_export()
         actual = self.read_first_line()
-        expected_head = 'nom;ville/pays;prix abonnement;prix cottisation;' + \
-        'date abonnement\r\n'
+        expected_head = (
+                u'nom;société;ville/pays;' +
+                u'numeros à recevoir;HS à recevoir;' + 
+                'prix abonnement;prix cottisation;' + 
+                'date abonnement\r\n'
+                )
         self.assertEqual(expected_head, actual)
 
     def read_first_line(self):
@@ -50,7 +54,7 @@ class CsvExporterTest(unittest.TestCase):
         save_basic_subscriber() 
         self.exporter.do_export()
         actual_line = self.read_second_line()
-        expected_line = 'John Doe;Rouen;20.0;30.0;12/07/2011\r\n'
+        expected_line = 'John Doe;Apave;Rouen;5;6;20.0;30.0;12/07/2011\r\n'
         self.assertEquals(expected_line, actual_line)
 
     def read_second_line(self):
@@ -68,18 +72,28 @@ class CsvExporterTest(unittest.TestCase):
         expected_line_begin = u'Bébé Yé'
         self.assertEquals(expected_line_begin, actual_line)
 
+    def test_date_error(self):
+        """Test the behaviour of the code when we have an error in date"""
+        save_wrong_date_subscriber()
+        self.exporter.do_export()
+        actual_line = self.read_second_line()
+        expected_line = u'John Doe;;;6;0;0.0;0.0;12/07/0211\r\n'
+        self.assertEquals(expected_line, actual_line)
+
     def tearDown(self):
         os.remove(self.test_file)
         self.cursor.close()
         self.conn.close()
 
-    # TODO test avec une date genre 200
 
 def save_basic_subscriber():
     sub = Subscriber()
     sub.lastname = 'Doe'
     sub.firstname = 'John'
+    sub.company = 'Apave'
     sub.city = 'Rouen'
+    sub.issues_to_receive = 5
+    sub.hors_serie1 = 6
     sub.subscription_price = 20
     sub.membership_price = 30
     sub.subscription_date = datetime.date(2011, 07, 12)
@@ -89,6 +103,13 @@ def save_accent_subscriber():
     sub = Subscriber()
     sub.lastname = u'Yé'
     sub.firstname = u'Bébé'
+    sub.save()
+    
+def save_wrong_date_subscriber():
+    sub = Subscriber()
+    sub.lastname = 'Doe'
+    sub.firstname = 'John'
+    sub.subscription_date = datetime.date(211, 07, 12)
     sub.save()
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''This module contains the exporter classes to generate dumps of the DB for
 routage, checks,...'''
 
@@ -8,8 +9,6 @@ import sys
 import codecs
 import unicodedata
 import gaabo_conf
-import gaabo_constants
-import html_tools
 
 class RoutageExporter(object):
     """This class exports the DB in the format expected by the routing service.
@@ -220,24 +219,19 @@ class ReSubscribeExporter(object):
 
 #####
 
-import csv
-
 class CsvExporter(object):
-    """This class allozs to export the whole database as a CSV"""
+    """This class allows to export the whole database as a CSV"""
 
-    QUERY = """SELECT firstname, lastname, city,
+    QUERY = """SELECT firstname, lastname, company, city,
+    issues_to_receive, hors_serie1,
     subscription_price, membership_price, subscription_date
     FROM subscribers"""
 
     SEPARATOR = ';'
     EOL = '\r\n'
 
-    # TODO le module csv est merdique avec utf-8. Il faut revenir a la vieille
-    # methode  pour faire passer les tests.
-
     def __init__(self, file_name):
         self.export_file = codecs.open(file_name, 'w', 'utf-8')
-        self.csv_writer = csv.writer(self.export_file, delimiter=';')
 
     def do_export(self):
         self.write_header()
@@ -247,7 +241,10 @@ class CsvExporter(object):
     def write_header(self):
         header_list = []
         header_list.append('nom')
+        header_list.append(u'société')
         header_list.append('ville/pays')
+        header_list.append(u'numeros à recevoir')
+        header_list.append(u'HS à recevoir')
         header_list.append('prix abonnement')
         header_list.append('prix cottisation')
         header_list.append('date abonnement')
@@ -274,7 +271,10 @@ class CsvExporter(object):
         printed_row_array.append(unicode(row[2]))
         printed_row_array.append(unicode(row[3]))
         printed_row_array.append(unicode(row[4]))
-        printed_row_array.append(date_from_iso(row[5]).strftime('%d/%m/%Y'))
+        printed_row_array.append(unicode(row[5]))
+        printed_row_array.append(unicode(row[6]))
+        printed_row_array.append(unicode(row[7]))
+        printed_row_array.append(date_string_from_iso(row[8]))
 
         self.print_list(printed_row_array)
 
@@ -282,12 +282,10 @@ class CsvExporter(object):
         self.export_file.close()
         self.conn.close()
 
-# TODO deja dans le subscriber DAO, a modifier
-import datetime
-
-def date_from_iso(iso_date_string):
+def date_string_from_iso(iso_date_string):
     if iso_date_string is not None:
-        (year, month, day) = iso_date_string.split('-')
-        return datetime.date(int(year), int(month), int(day))
+        items = iso_date_string.split('-')
+        items.reverse()
+        return '/'.join(items)
     else:
         return None

@@ -6,6 +6,7 @@ import sqlite3
 import datetime
 
 from subscriber import Subscriber
+from subscriber import is_correct_date
 import gaabo_conf
 
 class TestSubscriber(unittest.TestCase):
@@ -189,6 +190,21 @@ class TestSubscriber(unittest.TestCase):
         actual_date = sub.subscription_date
         self.assertEqual(actual_date.strftime('%d/%m/%Y'), '31/03/2011')
 
+    def test_wrong_date(self):
+        """Test what appens when we store a wrong date in the db and try to
+        format it"""
+        self.sub.lastname = 'toto'
+        self.sub.subscription_date = datetime.date(211, 7, 31)
+        self.sub.save()
+        sub = Subscriber.get_subscribers_from_lastname('toto')[0]
+        actual_date = sub.subscription_date
+        # When the date is false, we choose to display 01/01/1900...
+        # A check must be done while typing the date in the UI to be sure it
+        # won't happen
+        #self.assertEqual(actual_date.strftime('%d/%m/%Y'), '01/01/1900')
+
+
+
     def test_new_subscriber_id(self):
         """Test if we can get the ID of a saved Subscriber"""
         self.sub.lastname='toto'
@@ -208,6 +224,42 @@ class TestSubscriber(unittest.TestCase):
         user = Subscriber.get_subscribers_from_email(email)[0]
         self.assertEqual(user.firstname, 'email')
         self.assertEqual(user.lastname, 'user')
+
+class CorrectDateTest(unittest.TestCase):
+    """This class tests if the function correct_date in module subscriber works
+    well."""
+    def test_correct_string_date(self):
+        """Test if true is return when date is correct and entered as string"""
+        self.assertTrue(is_correct_date('2011', '07', '12'))
+
+    def test_incorrect_year(self):
+        """We put a year < 1900"""
+        self.assertFalse(is_correct_date('211', '07', '12'))
+
+    def test_incorrect_year_int(self):
+        """We put a year < 1900, passed as an int"""
+        self.assertFalse(is_correct_date(211, 07, 12))
+
+    def test_incorrect_month(self):
+        """We put a year > 12"""
+        self.assertFalse(is_correct_date('2011', '13', '12'))
+
+    def test_negative_month(self):
+        """We put a month < 0"""
+        self.assertFalse(is_correct_date('2011', '-1', '12'))
+
+    def test_far_incorrect_day(self):
+        """Test when day > 31""" 
+        self.assertFalse(is_correct_date('2011', '07', '42'))
+
+    def test_incorrect_feb_29(self):
+        """Test with an inccorect february 29th"""
+        self.assertFalse(is_correct_date('2011', '02', '29'))
+
+    def test_with_non_digit_strings(self):
+        """Test what happens when we send garbage as params"""
+        self.assertFalse(is_correct_date('tic', 'tac', 'toe'))
+        
 
 if __name__ == '__main__':
     unittest.main()

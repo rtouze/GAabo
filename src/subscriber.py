@@ -169,16 +169,10 @@ class SubscriberDAO(object):
             sub.bank,
             sub.ordering_type
             ) = row
-            sub.subscription_date = self.date_from_iso(iso_date_string)
+            sub.subscription_date = date_from_iso(iso_date_string)
             sublist.append(sub)
         return sublist
 
-    def date_from_iso(self, iso_date_string):
-        if iso_date_string is not None:
-            (year, month, day) = iso_date_string.split('-')
-            return datetime.date(int(year), int(month), int(day))
-        else:
-            return None
 
     def save(self, subscriber):
         sql = """INSERT INTO subscribers (
@@ -253,4 +247,42 @@ class SubscriberDAO(object):
         sql = """SELECT * FROM subscribers WHERE issues_to_receive < 2"""
         self.result = self.cursor.execute(sql)
         return self.fetch_result()
+
+# Module Functions
+
+def date_from_iso(iso_date_string):
+    default_date = datetime.date(1900, 01, 01)
+    if iso_date_string is None:
+        return default_date
+    (year, month, day) = iso_date_string.split('-')
+    if is_correct_date(year, month, day):
+        return datetime.date(int(year), int(month), int(day))
+    else:
+        return default_date
+
+def is_correct_date(year, month, day):
+    # TODO this can be reused in the UI
+    """Show is the year can be transforme to a datetime.date and formatted"""
+
+    if cannot_be_formatted(year):
+        return False
+    elif cannot_create_date(year, month, day):
+        return False
+    else:
+        return True
+
+def cannot_be_formatted(year):
+    """Years bellow 1900 cannot be formatted by strftime"""
+    if str(year).isdigit() and int(year) < 1900:
+        return True
+    else:
+        return False
+
+def cannot_create_date(year, month, day):
+    """Try to create a date to check that the params are correct"""
+    try:
+        datetime.date(int(year), int(month), int(day))
+        return False
+    except:
+        return True
 
