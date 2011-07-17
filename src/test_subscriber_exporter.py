@@ -12,7 +12,25 @@ import codecs
 from subscriber import Subscriber
 
 class RoutageExportTest(unittest.TestCase):
-    '''Test class for RoutageExporter object'''
+    """Test class for RoutageExporter object
+    Rotage format:
+        1 - N° de client      20 chars max
+        2 - Civilité (M, MME) 12 chars max
+        3 - Nom de client     32 chars max
+        4 - Prénom de client  20 chars max
+        5 - Nom de société    32 chars max
+        6 - Adresse 1         32 chars max
+        7 - Adresse 2         32 chars max
+        8 - Adresse 3             32 chars max
+        9 - Code postal            5 chars max
+        10 - Ville                26 chars max
+        11 - Nombre d’exemplaires  8 chars max
+        12 - Mode d’envoi          3 chars max
+        13 - Information libre 1  32 chars max
+        14 - Information libre 2  32 chars max
+        15 - Information libre 3  32 chars max
+        16 - Information libre 4  32 chars max
+       """ 
     def setUp(self):
         '''Define the file name and reset the DB'''
         self.conn = sqlite3.Connection('../databases/test.db')
@@ -60,7 +78,8 @@ class RoutageExportTest(unittest.TestCase):
         self.assertEquals(splitted_line[15], u'\n')
 
     def test_subscriber_without_remaining_issue(self):
-        '''Test if a subscriber that has no issue left will not receive a free number :)'''
+        '''Test if a subscriber that has no issue left will not receive a free
+        number :)'''
         subscriber = Subscriber()
         subscriber.lastname = 'toto'
         subscriber.issues_to_receive = 1
@@ -126,22 +145,6 @@ class RoutageExportTest(unittest.TestCase):
         line = file_pointer.readline()
         file_pointer.close()
 
-        # 1 - N° de client      20 chars max
-        # 2 - Civilité (M, MME) 12 chars max
-        # 3 - Nom de client     32 chars max
-        # 4 - Prénom de client  20 chars max
-        # 5 - Nom de société    32 chars max
-        # 6 - Adresse 1         32 chars max
-        # 7 - Adresse 2         32 chars max
-        # 8 - Adresse 3             32 chars max
-        # 9 - Code postal            5 chars max
-        # 10 - Ville                26 chars max
-        # 11 - Nombre d’exemplaires  8 chars max
-        # 12 - Mode d’envoi          3 chars max
-        # 13 - Information libre 1  32 chars max
-        # 14 - Information libre 2  32 chars max
-        # 15 - Information libre 3  32 chars max
-        # 16 - Information libre 4  32 chars max
         splitted_line = line.split('\t')
         self.assertTrue(len(splitted_line[0]) <= 20)
         self.assertTrue(len(splitted_line[1]) <= 12)
@@ -220,7 +223,21 @@ class RoutageExportTest(unittest.TestCase):
         subscriber.post_code = ''
         subscriber.save()
         line = self.__read_fist_line_of_export()
-        self.assertEquals(line.split('\t')[8], '')
+        self.assertEqual(line.split('\t')[8], '')
+
+    def test_handle_name_addition(self):
+        """Tests that if we have a name_addition, it goes in the first address
+        field"""
+        subscriber = Subscriber()
+        subscriber.lastname = 'Dupond'
+        subscriber.firstname = 'Toto'
+        subscriber.name_addition = 'Chez lulu'
+        subscriber.address = '14 Rue lalala'
+        subscriber.save()
+        line = self.__read_fist_line_of_export()
+        splitted = line.split('\t')
+        self.assertEqual('CHEZ LULU', splitted[5])
+        self.assertEqual('14 RUE LALALA', splitted[6])
 
     def tearDown(self):
         '''Delete generated file'''

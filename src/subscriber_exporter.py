@@ -83,7 +83,6 @@ class RoutageExporter(object):
                 line.append(postcode[0:5])
                 line.append(self.format_string(row[7][0:26]))
                 line.append('')
-                #TODO celle-ci doit etre le mode d'expedition
                 line.append('')
                 line.append('')
                 line.append('')
@@ -105,25 +104,45 @@ class RoutageExporter(object):
         return new_string.upper()
 
     def format_address(self, row):
-        '''Put address in 3 32 char length token instead of 2'''
-        if len(row[4]) <= 32 and len(row[5]) <= 32:
+        """If there is a name addition, it become the first address part. Else,
+        the words are ditributed in the three fields"""
+        if len(row[3]) > 0:
+            return [self.format_string(row[i]) for i in xrange(3, 6)]
+
+        elif len(row[4]) <= 32 and len(row[5]) <= 32:
             return [self.format_string(row[4]), self.format_string(row[5]), '']
 
+        else:
+            return self.redistribute_fields(row[4], row[5])
+
+
+    def redistribute_fields(self, field1, field2):
+        """Redistribute 2 fields of the address on three to avoid field
+        splitting"""
         formatted_address = ['', '', '']
-        long_address = ' '.join([row[4], row[5]])
+        long_address = field1 + ' ' + field2
+        indexes = self.get_space_indexes(long_address)
+
         tokens = long_address.split()
+
         i = 0
         for token in tokens:
             tested_triplet = (formatted_address, i, token)
-            if ( self.is_room_left_in_address_field(tested_triplet)):
+            if (self.is_room_left_in_address_field(tested_triplet)):
                 current = formatted_address[i]
                 formatted_address[i] = ' '.join([current, self.format_string(token)])
             else:
                 i += 1
                 formatted_address[i] = self.format_string(token)
-        for i in xrange(0, 2):
-            formatted_address[i] = formatted_address[i].strip()
-        return formatted_address
+
+        return [formatted_address[i].strip() for i in xrange(0, 3)]
+
+    def get_space_indexes(self,string):
+        """Return a list of indexes of strin where the char is a space"""
+        index_list = []
+        for i in xrange(0, len(string)):
+            if string[i] == ' ': index_list.append(i)
+        return index_list
 
     def is_room_left_in_address_field(self, triplet):
         '''test if we can add an address part to current field. See code bellow
