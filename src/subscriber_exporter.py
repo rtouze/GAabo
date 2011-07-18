@@ -15,7 +15,8 @@ class RoutageExporter(object):
     Only the subscribers that have issues to receive are exported. It works for
     regular and special issues."""
 
-    ROUTAGE_ADDRESS_FIELDS_LEN = 32
+    OUTPUT_LEFT_PADDING = 2
+    OUTPUT_RIGHT_PADDING = 6
     QUERY_BASE = """SELECT
             lastname,
             firstname,
@@ -64,29 +65,7 @@ class RoutageExporter(object):
         try:
             result = cursor.execute(self.query)
             for row in result:
-                reformatted_address = self.format_address(row)
-                line = []
-                line.append('')
-                line.append('')
-                line.append(self.format_string(row[0][0:32]))
-                line.append(self.format_string(row[1][0:20]))
-                line.append(self.format_string(row[2][0:32]))
-                line.append(reformatted_address[0][0:32])
-                line.append(reformatted_address[1][0:32])
-                line.append(reformatted_address[2][0:32])
-                #TODO
-                if (unicode(row[6]).isdigit() and row[6] != 0):
-                    postcode = '%05d' % row[6] 
-                else:
-                    postcode = ''
-                line.append(postcode[0:5])
-                line.append(self.format_string(row[7][0:26]))
-                line.append('')
-                line.append('')
-                line.append('')
-                line.append('')
-                line.append('')
-                line.append('')
+                line = self.generate_output_line(row)
                 self.file_pointer.write('\t'.join(line) + '\n')
         except:
             print 'ERROR: Exception caught\n\t%s' % sys.exc_info()[1]
@@ -95,63 +74,36 @@ class RoutageExporter(object):
             conn.close()
             self.file_pointer.close()
 
+    def generate_output_line(self, sql_row):
+        """Generate a line as a list from the list sql_row extracted from the
+        database"""
+        line = []
+        line.extend(['']*self.OUTPUT_LEFT_PADDING)
+        line.append(self.format_string(sql_row[0][0:32]))
+        line.append(self.format_string(sql_row[1][0:20]))
+        line.append(self.format_string(sql_row[2][0:32]))
+        line.append(self.format_string(sql_row[3])[0:32])
+        line.append(self.format_string(sql_row[4])[0:32])
+        line.append(self.format_string(sql_row[5])[0:32])
+        postcode = self.format_postcode(sql_row[6])
+        line.append(postcode[0:5])
+        line.append(self.format_string(sql_row[7][0:26]))
+        line.extend(['']*self.OUTPUT_RIGHT_PADDING)
+        return line
+
     def format_string(self, string):
-        '''Remove non ascii chars and set string to uppercase'''
+        """Remove non ascii chars and set string to uppercase"""
         new_string = unicodedata.normalize('NFKD', unicode(string))
         new_string = ''.join([c for c in new_string if not unicodedata.combining(c)])
         new_string = new_string.encode('ascii', 'ignore')
         return new_string.upper()
 
-    def format_address(self, row):
-        """If there is a name addition, it become the first address part. Else,
-        the words are ditributed in the three fields"""
-        if len(row[3]) > 0:
-            return [self.format_string(row[i]) for i in xrange(3, 6)]
-
-        elif len(row[4]) <= 32 and len(row[5]) <= 32:
-            return [self.format_string(row[4]), self.format_string(row[5]), '']
-
+    def format_postcode(self, postcode):
+        """Format the post code as a 5 digit string"""
+        if (unicode(postcode).isdigit() and postcode != 0):
+            return '%05d' % postcode
         else:
-            return self.redistribute_fields(row[4], row[5])
-
-
-    def redistribute_fields(self, field1, field2):
-        """Redistribute 2 fields of the address on three to avoid field
-        splitting"""
-        formatted_address = ['', '', '']
-        long_address = field1 + ' ' + field2
-        indexes = self.get_space_indexes(long_address)
-
-        tokens = long_address.split()
-
-        i = 0
-        for token in tokens:
-            tested_triplet = (formatted_address, i, token)
-            if (self.is_room_left_in_address_field(tested_triplet)):
-                current = formatted_address[i]
-                formatted_address[i] = ' '.join([current, self.format_string(token)])
-            else:
-                i += 1
-                formatted_address[i] = self.format_string(token)
-
-        return [formatted_address[i].strip() for i in xrange(0, 3)]
-
-    def get_space_indexes(self,string):
-        """Return a list of indexes of strin where the char is a space"""
-        index_list = []
-        for i in xrange(0, len(string)):
-            if string[i] == ' ': index_list.append(i)
-        return index_list
-
-    def is_room_left_in_address_field(self, triplet):
-        '''test if we can add an address part to current field. See code bellow
-        to know what is triplet'''
-        field_list, index, token_to_add = triplet
-        return (
-                len(field_list[index]) + len(token_to_add)
-                <= self.ROUTAGE_ADDRESS_FIELDS_LEN
-                and index < 3
-                )
+            return ''
 
 #####
 

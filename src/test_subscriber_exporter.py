@@ -65,9 +65,9 @@ class RoutageExportTest(unittest.TestCase):
         self.assertEquals(splitted_line[2], u'ANNE DEBELLE')
         self.assertEquals(splitted_line[3], u'')
         self.assertEquals(splitted_line[4], u'')
-        self.assertEquals(splitted_line[5], u'RUE DUPRE 63')
-        self.assertEquals(splitted_line[6], u'BRUXELLES 1090')
-        self.assertEquals(splitted_line[7], u'')
+        self.assertEquals(splitted_line[5], u'')
+        self.assertEquals(splitted_line[6], u'RUE DUPRE 63')
+        self.assertEquals(splitted_line[7], u'BRUXELLES 1090')
         self.assertEquals(splitted_line[8], u'')
         self.assertEquals(splitted_line[9], u'BELGIQUE')
         self.assertEquals(splitted_line[10], u'')
@@ -162,34 +162,6 @@ class RoutageExportTest(unittest.TestCase):
         self.assertTrue(len(splitted_line[13]) <= 32)
         self.assertTrue(len(splitted_line[14]) <= 32)
         self.assertTrue(len(splitted_line[15]) <= 32)
-
-    def test_address_splitted_in_3(self):
-        '''In the db, the address is stored in 2 fields (address and
-        address_addition). Routage file split the address on 3 fields. We can
-        translate the 2 db fields to use the 3 * 32 chars availables'''
-        subscriber = Subscriber()
-        subscriber.address = '3456713 avenue de la mediterranee en absence de lol'
-        subscriber.address_addition = 'avec plein de choses dedans'
-        subscriber.save()
-        line = self.__read_fist_line_of_export()
-        splitted_line = line.split('\t')
-        self.assertEqual(splitted_line[5], '3456713 AVENUE DE LA')
-        self.assertEqual(splitted_line[6], 'MEDITERRANEE EN ABSENCE DE LOL')
-        self.assertEqual(splitted_line[7], 'AVEC PLEIN DE CHOSES DEDANS')
-
-    def test_real_address_splitted_in_3(self):
-        """Test for address splitting but with a real address from the export
-        file"""
-        subscriber = Subscriber()
-        subscriber.address = 'QUARTIER LES BIZETS'
-        subscriber.address_addition = 'PLAN DES PENNES'
-        subscriber.save()
-        line = self.__read_fist_line_of_export()
-        splitted_line = line.split('\t')
-        # If field one is less than 32 char and field 2 less than 32 char, no
-        # reorg
-        self.assertEqual(splitted_line[5], 'QUARTIER LES BIZETS')
-        self.assertEqual(splitted_line[6], 'PLAN DES PENNES')
 
     def __read_fist_line_of_export(self):
         self.exporter.do_export()
