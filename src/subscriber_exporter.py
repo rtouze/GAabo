@@ -64,7 +64,6 @@ class RoutageExporter(object):
         try:
             result = cursor.execute(self.query)
             for row in result:
-                #TODO verifier avec les donnees pk j'ai pris le name_addition
                 reformatted_address = self.format_address(row)
                 line = []
                 line.append('')
