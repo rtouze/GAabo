@@ -83,6 +83,8 @@ class GaaboFrame(wx.Frame):
             #TODO ca commence a puer...
             if subscriber_field_name == 'subscription_date':
                 self.__write_date(key)
+            elif subscriber_field_name == 'hors_serie1' or subscriber_field_name == 'issues_to_receive':
+                self.__write_int(key)
             else:
                 self.__write_field(key)
 
@@ -99,6 +101,15 @@ class GaaboFrame(wx.Frame):
                             )
         else:
             self.current_edited_subscriber.subscription_date = None
+
+    def __write_int(self, key):
+        field_value = self.field_widget_dict[key].GetValue()
+        field_name = gaabo_constants.field_names[key][0]
+        if field_value.isdigit():
+            int_value = int(field_value)
+        else:
+            int_value = 0
+        self.current_edited_subscriber.__dict__[field_name] = int_value
 
     def __write_field(self, key):
         subscriber_field_name = gaabo_constants.field_names[key][0]
