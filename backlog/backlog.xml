@@ -2,6 +2,9 @@
 <product-backlog>
     <stories type="todo">
         <story>
+            Mettre un bouton dans l'IHM pour la purge des anciens abonnes
+        </story>
+        <story>
             Je veux purger la base des abonnes n'ayant plus de numero ni de
             hors serie a recevoir
         </story>
