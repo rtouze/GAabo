@@ -16,7 +16,18 @@ from subscriber_exporter import *
 
 TEST_FILE = 'export_test.csv'
 
-class RoutageExportTest(unittest.TestCase):
+class AbstractExportTest(unittest.TestCase):
+    """Abstract Class that can be used for all Export tests"""
+    def setUp(self):
+        """Common setup method that reset the test DB"""
+        reset_test_db()
+        gaabo_conf.db_name = 'test.db'
+
+    def tearDown(self):
+        '''Delete generated file'''
+        os.remove(TEST_FILE)
+
+class RoutageExportTest(AbstractExportTest):
     """Test class for RoutageExporter object
     Rotage format:
         1 - N° de client      20 chars max
@@ -37,13 +48,12 @@ class RoutageExportTest(unittest.TestCase):
         16 - Information libre 4  32 chars max
        """ 
     def setUp(self):
-        '''Define the file name and reset the DB'''
-        reset_test_db()
-        gaabo_conf.db_name = 'test.db'
+        """Call common setup and create the RoutageExporter"""
+        AbstractExportTest.setUp(self)
         self.exporter = RoutageExporter(TEST_FILE)
 
     def test_first_line(self):
-        '''Test if the first line of generated file is well written'''
+        """Test if the first line of generated file is well written"""
 
         subs = Subscriber()
         subs.lastname = 'Debelle'
@@ -55,8 +65,8 @@ class RoutageExportTest(unittest.TestCase):
         subs.save()
 
         self.exporter.do_export()
-
         line = get_first_line()
+
         self.assertTrue(line is not None)
 
         splitted_line = line.split('\t')
@@ -87,7 +97,6 @@ class RoutageExportTest(unittest.TestCase):
         subscriber.issues_to_receive = 0
         subscriber.save()
         self.exporter.do_export()
-
         self.__test_presence_toto_tata()
 
     def __test_presence_toto_tata(self):
@@ -203,16 +212,11 @@ class RoutageExportTest(unittest.TestCase):
         self.assertEqual('CHEZ LULU', splitted[5])
         self.assertEqual('14 RUE LALALA', splitted[6])
 
-    def tearDown(self):
-        '''Delete generated file'''
-        os.remove(TEST_FILE)
-
-class CsvExporterTest(unittest.TestCase):
+class CsvExporterTest(AbstractExportTest):
     """Tests class for the CsvExporter from subscriber_exporter module"""
 
     def setUp(self):
-        reset_test_db()
-        gaabo_conf.db_name = 'test.db'
+        AbstractExportTest.setUp(self)
         self.exporter = CsvExporter(TEST_FILE)
         
     def test_header(self):
@@ -258,10 +262,6 @@ class CsvExporterTest(unittest.TestCase):
         sub.subscription_date = datetime.date(211, 07, 12)
         sub.save()
 
-    def tearDown(self):
-        """Delete the test file"""
-        os.remove(TEST_FILE)
-
     def save_basic_subscriber(self):
         sub = Subscriber()
         sub.lastname = 'Doe'
@@ -280,9 +280,8 @@ class CsvExporterTest(unittest.TestCase):
         sub.lastname = u'Yé'
         sub.firstname = u'Bébé'
         sub.save()
-    
 
-class ResubscribingTest(unittest.TestCase):
+class ResubscribingTest(AbstractExportTest):
     """This class tests the generation of the CSV file for re-subscribing
     mailing campaign.
 
@@ -298,23 +297,39 @@ class ResubscribingTest(unittest.TestCase):
 
     def setUp(self):
         """Setup class. Initialize in memory db"""
-        reset_test_db()
-        gaabo_conf.db_name = 'test.db'
+        AbstractExportTest.setUp(self)
         self.exporter = ReSubscribeExporter(TEST_FILE)
-
-
 
     def test_regular_subscriber(self):
         """Tests if the coordinates of a regular subscriber are OK in the
         file"""
-        
-        init_regular_subscriber()
+        self.init_regular_subscriber()
         self.exporter.do_export()
 
         actual_line = get_second_line()
-        expected_line = get_regular_subscriber_line() 
+        expected_line = self.get_regular_subscriber_line() 
 
         self.assertEqual(expected_line, actual_line)
+        
+    def get_regular_subscriber_line(self):
+        return u'PRENOM NOM;ADRESSE;ADDITION;12345;VILLE\n'
+
+    def init_regular_subscriber(self):
+        """Initialize a regular subscriber, in France, without company with no
+        issue to receive."""
+        sub = self.get_regular_subscriber() 
+        sub.issues_to_receive = 0
+        sub.save()
+
+    def get_regular_subscriber(self):
+        sub = Subscriber()
+        sub.lastname = 'Nom'
+        sub.firstname = 'Prenom'
+        sub.address = 'Adresse'
+        sub.address_addition = 'Addition'
+        sub.post_code = '12345'
+        sub.city = 'Ville'
+        return sub
 
     def test_header_line(self):
         self.exporter.do_export()
@@ -326,7 +341,7 @@ class ResubscribingTest(unittest.TestCase):
         self.assertEqual(expected_line, actual_line)
 
     def test_non_ending_subscriber(self):
-        init_regular_subscriber_with_issues_to_receive()
+        self.init_regular_subscriber_with_issues_to_receive()
         self.exporter.do_export()
 
         actual_line = get_second_line()
@@ -334,27 +349,52 @@ class ResubscribingTest(unittest.TestCase):
 
         self.assertEqual(expected_line, actual_line)
 
+    def init_regular_subscriber_with_issues_to_receive(self):
+        """Initialize a regular subscriber, in France, without company with one
+        issue to receive."""
+        sub = self.get_regular_subscriber() 
+        sub.issues_to_receive = 1
+        sub.save()
+
     def test_company_subscriber(self):
-        init_company_subscriber()
+        self.init_company_subscriber()
         self.exporter.do_export()
 
         actual_line = get_second_line()
-        expected_line = get_company_subscriber_line()
+        expected_line = self.get_company_subscriber_line()
 
         self.assertEqual(expected_line, actual_line)
+
+    def init_company_subscriber(self):
+        """Initialize a regular subscriber with a company name"""
+        sub = self.get_regular_subscriber() 
+        sub.issues_to_receive = 0
+        sub.company = 'Capgemini'
+        sub.save()
+
+    def get_company_subscriber_line(self):
+        return u'CAPGEMINI, POUR PRENOM NOM;ADRESSE;ADDITION;12345;VILLE\n'
 
     def test_company_without_lastname(self):
-        init_company_subscriber_without_name()
+        self.init_company_subscriber_without_name()
         self.exporter.do_export()
 
         actual_line = get_second_line()
-        expected_line = get_company_without_name_subscriber_line()
+        expected_line = self.get_company_without_name_subscriber_line()
 
         self.assertEqual(expected_line, actual_line)
 
-    def tearDown(self):
-        """Delete the testfile"""
-        os.remove(TEST_FILE)
+    def init_company_subscriber_without_name(self):
+        """Initialize a subscriber without name info but with company info."""
+        sub = Subscriber()
+        sub.company = 'Google'
+        sub.address = 'Address'
+        sub.city = 'USA'
+        sub.issues_to_receive = 0
+        sub.save()
+
+    def get_company_without_name_subscriber_line(self):
+        return u'GOOGLE;ADDRESS;;;USA\n'
     
 def reset_test_db():
     conn = sqlite3.Connection('../databases/test.db')
@@ -362,55 +402,6 @@ def reset_test_db():
     cursor.execute('DELETE FROM subscribers')
     conn.commit()
     conn.close()
-
-def init_regular_subscriber():
-    """Initialize a regular subscriber, in France, without company with no
-    issue to receive."""
-    sub = get_regular_subscriber() 
-    sub.issues_to_receive = 0
-    sub.save()
-
-def get_regular_subscriber():
-    sub = Subscriber()
-    sub.lastname = 'Nom'
-    sub.firstname = 'Prenom'
-    sub.address = 'Adresse'
-    sub.address_addition = 'Addition'
-    sub.post_code = '12345'
-    sub.city = 'Ville'
-    return sub
-
-def get_regular_subscriber_line():
-    return u'PRENOM NOM;ADRESSE;ADDITION;12345;VILLE\n'
-
-def init_regular_subscriber_with_issues_to_receive():
-    """Initialize a regular subscriber, in France, without company with one
-    issue to receive."""
-    sub = get_regular_subscriber() 
-    sub.issues_to_receive = 1
-    sub.save()
-
-def init_company_subscriber():
-    """Initialize a regular subscriber with a company name"""
-    sub = get_regular_subscriber() 
-    sub.issues_to_receive = 0
-    sub.company = 'Capgemini'
-    sub.save()
-
-def get_company_subscriber_line():
-    return u'CAPGEMINI, POUR PRENOM NOM;ADRESSE;ADDITION;12345;VILLE\n'
-
-def init_company_subscriber_without_name():
-    """Initialize a subscriber without name info but with company info."""
-    sub = Subscriber()
-    sub.company = 'Google'
-    sub.address = 'Address'
-    sub.city = 'USA'
-    sub.issues_to_receive = 0
-    sub.save()
-
-def get_company_without_name_subscriber_line():
-    return u'GOOGLE;ADDRESS;;;USA\n'
 
 def get_second_line():
     """Get the first data line, which should be the second line of the
