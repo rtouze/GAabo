@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <product-backlog>
     <stories type="todo">
+        <story>
+            Je veux purger la base des abonnes n'ayant plus de numero ni de
+            hors serie a recevoir
+        </story>
+        <story>
+            Je veux generer le listing des abonnes avec leur adresse pour le
+            mailing de reabonnement
+        </story>
         <story theme="Navigation">
             Je veux naviguer dans les boutons avec des raccourcis claviers
         </story>
@@ -17,11 +25,6 @@
             Je veux que les information que je saisis soient controlees
             Pour eviter de mettre des donnees au format errone dans la base
         </story>
-        <story theme="Extraction" priority="400" points="3">
-            En tant que gestionnaire des abonnes
-            Je veux extraire la listes des abonnes au format CSV
-            Pour pouvoir avoir un apercu global des abonnes dans un tableur.
-        </story>
         <story theme="Extraction" priority="300" points="5">
             En tant que gestionnaire des abonnes
             Je veux avoir un rapport d'incoherence
@@ -32,11 +35,6 @@
             Je veux generer un export sql de la base
             Pour pouvoir la transporter et restaurer facilement.
         </story>
-        <story theme="Extraction" priority="200" points="5">
-            En tant que gestionnaire des abonnes
-            Je veux avoir un rapport html sur pluseurs pages
-            Pour pouvoir representer les abonnes
-        </story>
         <story theme="Interface" priority="100" points="5">
             En tant que gestionnaire des abonnés
             Je veux accéder au service de gestion par internet
@@ -44,6 +42,11 @@
         </story>
     </stories>
     <stories type="done">
+        <story theme="Extraction" priority="400" points="3">
+            En tant que gestionnaire des abonnes
+            Je veux extraire la listes des abonnes au format CSV
+            Pour pouvoir avoir un apercu global des abonnes dans un tableur.
+        </story>
         <story theme="Extraction">
             Je veux exporter la liste des abonnes allant recevoir un courier
             pour leur reabonnement pour la transmettre au routeur.
