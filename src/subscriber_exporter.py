@@ -10,7 +10,19 @@ import codecs
 import unicodedata
 import gaabo_conf
 
-class RoutageExporter(object):
+class AbstractExporter(object):
+    """Object parent of all the exporters. It's useless to instanciate it"""
+    def __init__(self, file_path):
+        self.db_file = os.path.join(gaabo_conf.db_directory, gaabo_conf.db_name)
+        self.file_pointer = codecs.open(file_path, 'w', 'utf-8')
+        self.conn = sqlite3.Connection(self.db_file)
+
+    def close_resources(self):
+        """Close resources used to generate the file"""
+        self.conn.close()
+        self.file_pointer.close()
+
+class RoutageExporter(AbstractExporter):
     """This class exports the DB in the format expected by the routing service.
     Only the subscribers that have issues to receive are exported. It works for
     regular and special issues."""
@@ -32,8 +44,8 @@ class RoutageExporter(object):
     def __init__(self, file_path):
         """Init method open a file with ascii encoding, expected by routing
         service."""
-        self.db_file = os.path.join(gaabo_conf.db_directory, gaabo_conf.db_name)
-        self.file_pointer = codecs.open(file_path, 'w', 'ascii')
+        AbstractExporter.__init__(self, file_path)
+       
 
     def do_export(self):
         '''Export method to build a routage file for regular issue sending'''
@@ -60,8 +72,7 @@ class RoutageExporter(object):
 
     def export_common(self):
         '''Common code to export for routage service'''
-        conn = sqlite3.Connection(self.db_file)
-        cursor = conn.cursor()
+        cursor = self.conn.cursor()
         try:
             result = cursor.execute(self.query)
             for row in result:
@@ -70,9 +81,7 @@ class RoutageExporter(object):
         except:
             print 'ERROR: Exception caught\n\t%s' % sys.exc_info()[1]
         else:
-            cursor.close()
-            conn.close()
-            self.file_pointer.close()
+            self.close_resources()
 
     def generate_output_line(self, sql_row):
         """Generate a line as a list from the list sql_row extracted from the
@@ -107,7 +116,7 @@ class RoutageExporter(object):
 
 #####
 
-class ReSubscribeExporter(object):
+class ReSubscribeExporter(AbstractExporter):
     """This class extact a CSV file for the re6subscribing mailing campaign"""
 
     QUERY = """SELECT firstname, lastname, company, address, address_addition,
@@ -115,35 +124,33 @@ class ReSubscribeExporter(object):
 
     def __init__(self, file_path):
         """This constructor open a file descriptor to realize the export"""
-        self.db_file = os.path.join(gaabo_conf.db_directory, gaabo_conf.db_name)
-        self.export_file = codecs.open(file_path, 'w', 'utf-8')
-        self.conn = None
+        AbstractExporter.__init__(self, file_path)
 
     def do_export(self):
         """Perform the export in the file given as parameter of object
         constructor"""
-        self.__write_header()
-        self.__write_body()
-        self.__close_resources()
+        self._write_header()
+        self._write_body()
+        self.close_resources()
 
-    def __write_header(self):
+    def _write_header(self):
         """Write header line in export file"""
         header = u'Destinataire;Adresse;Complement Adresse;' + \
                 u'Code Postal;Ville / Pays\n'
-        self.export_file.write(header)
+        self.file_pointer.write(header)
 
-    def __write_body(self):
+    def _write_body(self):
         """Write the body of the export file"""
         self.conn = sqlite3.Connection(self.db_file)
-        for row in self.__execute_query():
-            self.__write_in_file(row)
+        for row in self._execute_query():
+            self._write_in_file(row)
 
-    def __execute_query(self):
+    def _execute_query(self):
         """Execute the query that provides the data to the export file"""
         cursor = self.conn.cursor()
         return cursor.execute(self.QUERY)
 
-    def __write_in_file(self, row):
+    def _write_in_file(self, row):
         """Write a data row in the file"""
         line = []
         line.append(self.__get_recipient(row))
@@ -151,7 +158,7 @@ class ReSubscribeExporter(object):
         line.append(self.__get_address_addition(row))
         line.append(self.__get_post_code(row))
         line.append(self.__get_city(row))
-        self.export_file.write(';'.join(line) + '\n') 
+        self.file_pointer.write(';'.join(line) + '\n') 
 
     def __get_recipient(self, row):
         """Extract recipient field from a data row"""
@@ -181,11 +188,6 @@ class ReSubscribeExporter(object):
             return str(postcode)
         else:
             return ''
-
-    def __close_resources(self):
-        """Close every resource needed by the object"""
-        self.conn.close()
-        self.export_file.close()
 
 #####
 
@@ -251,6 +253,28 @@ class CsvExporter(object):
     def close_resources(self):
         self.export_file.close()
         self.conn.close()
+
+class EmailExporter(AbstractExporter):
+    QUERY = """SELECT email_address
+    FROM subscribers
+    WHERE email_address != ''
+    AND issues_to_receive = 0
+    AND hors_serie1 = 0"""
+
+    def __init__(self, file_name):
+        AbstractExporter.__init__(self, file_name)
+
+    def do_export(self):
+        cursor = self.conn.cursor()
+        result = cursor.execute(self.QUERY)
+        file_content = []
+        for row in result:
+            file_content.append(row[0].lower())
+
+        if file_content != []:
+            self.file_pointer.write(','.join(file_content) + '\n')
+
+        self.close_resources()
 
 def date_string_from_iso(iso_date_string):
     if iso_date_string is not None:

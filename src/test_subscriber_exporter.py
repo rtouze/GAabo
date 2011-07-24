@@ -2,17 +2,15 @@
 # -*- coding: utf-8 -*-
 '''This module tests the exporters classes for subscriber list'''
 
-import gaabo_conf
 import unittest
-
 import os
 import sqlite3
-import subscriber_importer
 import codecs
 import datetime
 
+import gaabo_conf
 from subscriber import Subscriber
-from subscriber_exporter import *
+import subscriber_exporter
 
 TEST_FILE = 'export_test.csv'
 
@@ -22,10 +20,17 @@ class AbstractExportTest(unittest.TestCase):
         """Common setup method that reset the test DB"""
         reset_test_db()
         gaabo_conf.db_name = 'test.db'
+        self.exporter = None
 
     def tearDown(self):
         '''Delete generated file'''
         os.remove(TEST_FILE)
+
+    def export_and_get_first_line(self):
+        """Perform the export with provided exporter and extract file first
+        line"""
+        self.exporter.do_export()
+        return get_first_line()
 
 class RoutageExportTest(AbstractExportTest):
     """Test class for RoutageExporter object
@@ -50,7 +55,7 @@ class RoutageExportTest(AbstractExportTest):
     def setUp(self):
         """Call common setup and create the RoutageExporter"""
         AbstractExportTest.setUp(self)
-        self.exporter = RoutageExporter(TEST_FILE)
+        self.exporter = subscriber_exporter.RoutageExporter(TEST_FILE)
 
     def test_first_line(self):
         """Test if the first line of generated file is well written"""
@@ -64,8 +69,7 @@ class RoutageExportTest(AbstractExportTest):
         subs.issues_to_receive = 1
         subs.save()
 
-        self.exporter.do_export()
-        line = get_first_line()
+        line = self.export_and_get_first_line()
 
         self.assertTrue(line is not None)
 
@@ -147,8 +151,7 @@ class RoutageExportTest(AbstractExportTest):
         subscriber.issues_to_receive = 10
         subscriber.city = big_string
         subscriber.save()
-        self.exporter.do_export()
-        line = get_first_line()
+        line = self.export_and_get_first_line()
 
         splitted_line = line.split('\t')
         self.assertTrue(len(splitted_line[0]) <= 20)
@@ -182,8 +185,7 @@ class RoutageExportTest(AbstractExportTest):
         subscriber = Subscriber()
         subscriber.post_code = 1300
         subscriber.save()
-        self.exporter.do_export()
-        line = get_first_line()
+        line = self.export_and_get_first_line()
         splitted_line = line.split('\t')
         self.assertEqual(splitted_line[8], '01300')
 
@@ -193,8 +195,7 @@ class RoutageExportTest(AbstractExportTest):
         subscriber.lastname = 'toto'
         subscriber.post_code = ''
         subscriber.save()
-        self.exporter.do_export()
-        line = get_first_line()
+        line = self.export_and_get_first_line()
         self.assertEqual(line.split('\t')[8], '')
 
     def test_handle_name_addition(self):
@@ -206,8 +207,7 @@ class RoutageExportTest(AbstractExportTest):
         subscriber.name_addition = 'Chez lulu'
         subscriber.address = '14 Rue lalala'
         subscriber.save()
-        self.exporter.do_export()
-        line = get_first_line()
+        line = self.export_and_get_first_line()
         splitted = line.split('\t')
         self.assertEqual('CHEZ LULU', splitted[5])
         self.assertEqual('14 RUE LALALA', splitted[6])
@@ -217,12 +217,11 @@ class CsvExporterTest(AbstractExportTest):
 
     def setUp(self):
         AbstractExportTest.setUp(self)
-        self.exporter = CsvExporter(TEST_FILE)
+        self.exporter = subscriber_exporter.CsvExporter(TEST_FILE)
         
     def test_header(self):
         """Test the heading line of the file"""
-        self.exporter.do_export()
-        actual = get_first_line()
+        actual = self.export_and_get_first_line()
         expected_head = (
                 u'nom;société;ville/pays;' +
                 u'numeros à recevoir;HS à recevoir;' + 
@@ -298,15 +297,15 @@ class ResubscribingTest(AbstractExportTest):
     def setUp(self):
         """Setup class. Initialize in memory db"""
         AbstractExportTest.setUp(self)
-        self.exporter = ReSubscribeExporter(TEST_FILE)
+        self.exporter = subscriber_exporter.ReSubscribeExporter(TEST_FILE)
 
     def test_regular_subscriber(self):
         """Tests if the coordinates of a regular subscriber are OK in the
         file"""
         self.init_regular_subscriber()
         self.exporter.do_export()
-
         actual_line = get_second_line()
+
         expected_line = self.get_regular_subscriber_line() 
 
         self.assertEqual(expected_line, actual_line)
@@ -332,9 +331,8 @@ class ResubscribingTest(AbstractExportTest):
         return sub
 
     def test_header_line(self):
-        self.exporter.do_export()
+        actual_line = self.export_and_get_first_line()
 
-        actual_line = get_first_line()
         expected_line = u'Destinataire;Adresse;Complement Adresse;' + \
                 u'Code Postal;Ville / Pays\n'
 
@@ -395,6 +393,93 @@ class ResubscribingTest(AbstractExportTest):
 
     def get_company_without_name_subscriber_line(self):
         return u'GOOGLE;ADDRESS;;;USA\n'
+
+class EmailExporterTest(AbstractExportTest):
+    """This class tests the fonctionnality to unload the email list of
+    subscribers with ended subscription. The extracted emails are stored in a
+    file separated by commas in order to put them in the Bcc field of an
+    email"""
+
+    def setUp(self):
+        AbstractExportTest.setUp(self)
+        self.exporter = subscriber_exporter.EmailExporter(TEST_FILE)
+
+    def test_one_email(self):
+        """Test retrieval of one subscriber's email"""
+        subscriber = Subscriber()
+        subscriber.issues_to_receive = 0
+        subscriber.email_address = 'toto@example.com'
+        subscriber.save()
+        line = self.export_and_get_first_line()
+
+        self.assertEqual('toto@example.com', line.strip())
+
+    def test_two_email(self):
+        """Tests when we have two emails in generated file"""
+        subscriber = Subscriber()
+        subscriber.email_address = 'toto@example.com'
+        subscriber.issues_to_receive = 0
+        subscriber.save()
+        subscriber = Subscriber()
+        subscriber.email_address = 'tata@example.com'
+        subscriber.issues_to_receive = 0
+        subscriber.save()
+        line = self.export_and_get_first_line()
+
+        self.assertEqual('toto@example.com,tata@example.com\n', line)
+
+    def test_remaining_issues_subscriber(self):
+        """Tests when the subscriber has remaining issues"""
+        subs = Subscriber()
+        subs.issues_to_receive = 1
+        subs.email_address = 'tata@example.com'
+        subs.save()
+        line = self.export_and_get_first_line()
+        self.assertEqual('', line)
+
+    def test_remaining_special_issues_subscriber(self):
+        """Tests when the subscriber has remaining special issues"""
+        subs = Subscriber()
+        subs.issues_to_receive = 0
+        subs.hors_serie1 = 1
+        subs.email_address = 'tata@example.com'
+        subs.save()
+        line = self.export_and_get_first_line()
+        self.assertEqual('', line)
+
+    def test_subscriber_with_regular_and_special(self):
+        """Test when subscriber has both remaining regular and special issues"""
+        subs = Subscriber()
+        subs.issues_to_receive = 1
+        subs.hors_serie1 = 1
+        subs.email_address = 'tata@example.com'
+        subs.save()
+        line = self.export_and_get_first_line()
+        self.assertEqual('', line)
+
+    def test_email_in_lowercase(self):
+        """Tests that in generated file, the emails are in lower case"""
+        subscriber = Subscriber()
+        subscriber.issues_to_receive = 0
+        subscriber.email_address = 'tOTo@exAmpLE.COm'
+        subscriber.save()
+        line = self.export_and_get_first_line()
+        self.assertEqual('toto@example.com', line.strip())
+
+    def test_empty_email(self):
+        """Tests what appens when a subscriber has no email"""
+        subscriber = Subscriber()
+        subscriber.email_address = 'toto@example.com'
+        subscriber.issues_to_receive = 0
+        subscriber.save()
+        subscriber = Subscriber()
+        subscriber.email_address = ''
+        subscriber.issues_to_receive = 0
+        subscriber.save()
+        line = self.export_and_get_first_line()
+
+        self.assertEqual('toto@example.com\n', line)
+
     
 def reset_test_db():
     conn = sqlite3.Connection('../databases/test.db')
