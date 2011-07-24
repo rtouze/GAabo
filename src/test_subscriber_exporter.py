@@ -208,22 +208,17 @@ class RoutageExportTest(unittest.TestCase):
         os.remove(TEST_FILE)
 
 class CsvExporterTest(unittest.TestCase):
-    """Test class for the CsvExporter from subscriber_exporter module"""
+    """Tests class for the CsvExporter from subscriber_exporter module"""
 
     def setUp(self):
-        self.conn = sqlite3.Connection('../databases/test.db')
-        self.cursor = self.conn.cursor()
-        self.cursor.execute('DELETE FROM subscribers')
-        self.conn.commit()
+        reset_test_db()
         gaabo_conf.db_name = 'test.db'
-        self.test_file = 'data/test_routage.csv'
-        self.exporter = CsvExporter(self.test_file)
+        self.exporter = CsvExporter(TEST_FILE)
         
-
     def test_header(self):
         """Test the heading line of the file"""
         self.exporter.do_export()
-        actual = self.read_first_line()
+        actual = get_first_line()
         expected_head = (
                 u'nom;société;ville/pays;' +
                 u'numeros à recevoir;HS à recevoir;' + 
@@ -232,78 +227,60 @@ class CsvExporterTest(unittest.TestCase):
                 )
         self.assertEqual(expected_head, actual)
 
-    def read_first_line(self):
-        file_descriptor = self.open_test_file()
-        line = file_descriptor.readline()
-        file_descriptor.close()
-        return line
-
-    def open_test_file(self):
-        """Open test file using utf-8 encoding"""
-        return codecs.open(self.test_file, 'r', 'utf-8')
-
     def test_basic_line(self):
         """Test that firstname / lastname field is correct"""
-        save_basic_subscriber() 
+        self.save_basic_subscriber() 
         self.exporter.do_export()
-        actual_line = self.read_second_line()
+        actual_line = get_second_line()
         expected_line = 'John Doe;Apave;Rouen;5;6;20.0;30.0;12/07/2011\r\n'
         self.assertEquals(expected_line, actual_line)
 
-    def read_second_line(self):
-        file_descriptor = self.open_test_file()
-        file_descriptor.readline()
-        line = file_descriptor.readline()
-        file_descriptor.close()
-        return line;
-
     def test_accent_line(self):
         """Test that we can retrieve non ascii information"""
-        save_accent_subscriber()
+        self.save_accent_subscriber()
         self.exporter.do_export()
-        actual_line = self.read_second_line().split(';')[0]
+        actual_line = get_second_line().split(';')[0]
         expected_line_begin = u'Bébé Yé'
         self.assertEquals(expected_line_begin, actual_line)
 
     def test_date_error(self):
         """Test the behaviour of the code when we have an error in date"""
-        save_wrong_date_subscriber()
+        self.save_wrong_date_subscriber()
         self.exporter.do_export()
-        actual_line = self.read_second_line()
+        actual_line = get_second_line()
         expected_line = u'John Doe;;;6;0;0.0;0.0;12/07/0211\r\n'
         self.assertEquals(expected_line, actual_line)
 
+    def save_wrong_date_subscriber(self):
+        sub = Subscriber()
+        sub.lastname = 'Doe'
+        sub.firstname = 'John'
+        sub.subscription_date = datetime.date(211, 07, 12)
+        sub.save()
+
     def tearDown(self):
-        os.remove(self.test_file)
-        self.cursor.close()
-        self.conn.close()
+        """Delete the test file"""
+        os.remove(TEST_FILE)
 
+    def save_basic_subscriber(self):
+        sub = Subscriber()
+        sub.lastname = 'Doe'
+        sub.firstname = 'John'
+        sub.company = 'Apave'
+        sub.city = 'Rouen'
+        sub.issues_to_receive = 5
+        sub.hors_serie1 = 6
+        sub.subscription_price = 20
+        sub.membership_price = 30
+        sub.subscription_date = datetime.date(2011, 07, 12)
+        sub.save()
 
-def save_basic_subscriber():
-    sub = Subscriber()
-    sub.lastname = 'Doe'
-    sub.firstname = 'John'
-    sub.company = 'Apave'
-    sub.city = 'Rouen'
-    sub.issues_to_receive = 5
-    sub.hors_serie1 = 6
-    sub.subscription_price = 20
-    sub.membership_price = 30
-    sub.subscription_date = datetime.date(2011, 07, 12)
-    sub.save()
-
-def save_accent_subscriber():
-    sub = Subscriber()
-    sub.lastname = u'Yé'
-    sub.firstname = u'Bébé'
-    sub.save()
+    def save_accent_subscriber(self):
+        sub = Subscriber()
+        sub.lastname = u'Yé'
+        sub.firstname = u'Bébé'
+        sub.save()
     
-def save_wrong_date_subscriber():
-    sub = Subscriber()
-    sub.lastname = 'Doe'
-    sub.firstname = 'John'
-    sub.subscription_date = datetime.date(211, 07, 12)
-    sub.save()
 
 class ResubscribingTest(unittest.TestCase):
     """This class tests the generation of the CSV file for re-subscribing
@@ -323,13 +300,16 @@ class ResubscribingTest(unittest.TestCase):
         """Setup class. Initialize in memory db"""
         reset_test_db()
         gaabo_conf.db_name = 'test.db'
+        self.exporter = ReSubscribeExporter(TEST_FILE)
+
+
 
     def test_regular_subscriber(self):
         """Tests if the coordinates of a regular subscriber are OK in the
         file"""
         
         init_regular_subscriber()
-        export_data_in_test_file()
+        self.exporter.do_export()
 
         actual_line = get_second_line()
         expected_line = get_regular_subscriber_line() 
@@ -337,7 +317,7 @@ class ResubscribingTest(unittest.TestCase):
         self.assertEqual(expected_line, actual_line)
 
     def test_header_line(self):
-        export_data_in_test_file()
+        self.exporter.do_export()
 
         actual_line = get_first_line()
         expected_line = u'Destinataire;Adresse;Complement Adresse;' + \
@@ -347,7 +327,7 @@ class ResubscribingTest(unittest.TestCase):
 
     def test_non_ending_subscriber(self):
         init_regular_subscriber_with_issues_to_receive()
-        export_data_in_test_file()
+        self.exporter.do_export()
 
         actual_line = get_second_line()
         expected_line = u''
@@ -356,7 +336,7 @@ class ResubscribingTest(unittest.TestCase):
 
     def test_company_subscriber(self):
         init_company_subscriber()
-        export_data_in_test_file()
+        self.exporter.do_export()
 
         actual_line = get_second_line()
         expected_line = get_company_subscriber_line()
@@ -365,7 +345,7 @@ class ResubscribingTest(unittest.TestCase):
 
     def test_company_without_lastname(self):
         init_company_subscriber_without_name()
-        export_data_in_test_file()
+        self.exporter.do_export()
 
         actual_line = get_second_line()
         expected_line = get_company_without_name_subscriber_line()
@@ -373,7 +353,7 @@ class ResubscribingTest(unittest.TestCase):
         self.assertEqual(expected_line, actual_line)
 
     def tearDown(self):
-        """Close the testfile"""
+        """Delete the testfile"""
         os.remove(TEST_FILE)
     
 def reset_test_db():
@@ -432,22 +412,22 @@ def init_company_subscriber_without_name():
 def get_company_without_name_subscriber_line():
     return u'GOOGLE;ADDRESS;;;USA\n'
 
-
-def export_data_in_test_file():
-    exporter = ReSubscribeExporter(TEST_FILE)
-    exporter.do_export()
-
 def get_second_line():
     """Get the first data line, which should be the second line of the
     file"""
-    test_file = codecs.open(TEST_FILE, 'r', 'utf-8')
+    test_file = open_test_file()
     test_file.readline()
     line = test_file.readline()
     test_file.close()
     return line
 
+def open_test_file():
+    return codecs.open(TEST_FILE, 'r', 'utf-8')
+
 def get_first_line():
-    test_file = codecs.open(TEST_FILE, 'r', 'utf-8')
+    """Get the first line of an exporter file, which can contain a header or
+    regular data"""
+    test_file = open_test_file()
     line = test_file.readline()
     test_file.close()
     return line
