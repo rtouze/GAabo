@@ -1,0 +1,77 @@
+==TODO==
+    Pour l'export des adresses mail, mettre une adresse par ligne de fichier.
+
+    Mettre un bouton dans l'IHM pour la purge des anciens abonnes
+
+    Je veux purger la base des abonnes n'ayant plus de numero ni de
+    hors serie a recevoir
+
+    Je veux generer le listing des abonnes avec leur adresse pour le
+    mailing de reabonnement
+
+    Je veux naviguer dans les boutons avec des raccourcis claviers
+
+    Entant que gestionnaire des abonnes
+    Je veux pouvoir envoyer un mail de reabonnements aux abonnes en fin d'abonnement
+    Pour que ceux-ci se reabonnent
+
+    On veut un rapport donnant les abonnes a titre gratuits
+
+    En tant que gestionnaire des abonnes
+    Je veux que les information que je saisis soient controlees
+    Pour eviter de mettre des donnees au format errone dans la base
+
+    En tant que gestionnaire des abonnes
+    Je veux avoir un rapport d'incoherence
+    Pour pouvoir nettoyer ma base d'abonnes.
+
+    En tant que mainteneur de l'application
+    Je veux generer un export sql de la base
+    Pour pouvoir la transporter et restaurer facilement.
+
+    En tant que gestionnaire des abonnés
+    Je veux accéder au service de gestion par internet
+    Pour que le système soit centralisé
+
+==DONE==
+    En tant que gestionnaire des abonnes
+    Je veux extraire la listes des abonnes au format CSV
+    Pour pouvoir avoir un apercu global des abonnes dans un tableur.
+
+    Je veux exporter la liste des abonnes allant recevoir un courier
+    pour leur reabonnement pour la transmettre au routeur.
+
+    Je veux chercher les abonnes a partir de leur adresse email
+
+    En tant que gestionnaire des abonnés
+    je veux pouvoir saisir les information abonnés
+    Pour leur envoyer le journal
+
+    En tant que gestionnaire des abonnés
+    Je veux pouvoir modifier les informations abonnés
+    pour qu'ils continuent de recevoir le journal après un changement d'adresse
+
+    En tant que gestionnaire des abonnés 
+    Je veux savoir s'il s'agit d'un premier abonnement ou d'un réabonnement
+    Afin de ...?
+
+    En tant que gestionnaire des abonnés
+    Je veux pouvoir supprimer les personnes qui ne sont plus abonnés
+    Pour ne pas avoir à les traiter lors de l'envoi du journal
+
+    En tant que gestionnaire des abonnés
+    Je extraire la liste des abonnés allant recevoir le prochain numéro
+    Pour l'envoyer au service de création de données de routage
+
+    En tant que gestionnaire des abonnés
+    Je veux générer la liste des abonnés arrivant à terme de leur abonnement
+    Pour leur envoyer un email de renouvellement
+
+    En tant que gestionnaire des abonnés
+    Je veux importer la liste des abonnées existante
+    Pour utiliser rapidement le nouveau système
+
+    En tant que gestionnaire des abonnés
+    Je veux une interface facile à utiliser pour effectuer mes tâches
+    Pour être plus efficace dans mon travail
+

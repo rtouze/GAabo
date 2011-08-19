@@ -1,0 +1,31 @@
+==TODO==
+    L'extraction des abonnes pour le mailing de reabonnement ne prend pas en
+    compte le champ "complement de nom"
+
+    La gestion de l'encodage des inputs se fait en separant UTF-8 du
+    reste. Il faut trouver qqc de plus elegant.
+    
+==DONE==
+    Mettre en place un centrage vertical des cellules dans le
+    formulaire de saisie.
+
+    Virer la fonctionnalite d'affichage des abonnes en fin
+    d'abonnement, remplacer par un export (cf backlog).
+
+    Il faut une scrollbar pour la liste des abonnes a renouveler
+
+    Si le code postal commence par un 0, il est affiché sur 4 digits au
+    lieu de 5. Valable dans le formulaire d'entree et a l'export.
+
+    Probleme de caracteres accentues de l'IHM sous Windows. Il faut
+    prefixer les chaines par u pour qu'elles soient bien interpretees
+
+    Faire les recherche de nom et de company avec un like, ce sera plus simple
+
+    Le format de date dans l'IHM est yyyy-mm-dd. Quand on l'entre,
+    subscriber.py attend dd/mm/yyyy. Preciser le format dans l'IHM.
+
+    Il y a un souci de connexion avec la db quand on cherche un user à partir de sa company
+
+    Lorsqu'on edite un abonne puis qu'on le reedite apres confirmation,
+    un nouvel abonne est cree alors que le meme devrait etre utilise.
