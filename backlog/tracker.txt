@@ -1,4 +1,6 @@
 ==TODO==
+    Dans l'export pour le le mailing de reabom les CP commancant normalement
+    par 0 sont sur 4 chiffres
 
     La gestion de l'encodage des inputs se fait en separant UTF-8 du
     reste. Il faut trouver qqc de plus elegant.

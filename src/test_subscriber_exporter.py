@@ -301,6 +301,8 @@ class ResubscribingTest(AbstractExportTest):
         self.exporter = subscriber_exporter.ReSubscribeExporter(TEST_FILE)
         self.regular_subscriber_line = \
                 'PRENOM NOM;NAMEADDITION;ADRESSE;ADDITION;12345;VILLE\n'
+        self.four_digit_cp_subscriber_line = \
+                'PRENOM NOM;NAMEADDITION;ADRESSE;ADDITION;06345;VILLE\n'
         self.company_subscriber_line = \
                 'CAPGEMINI, POUR PRENOM NOM;' + \
                 'NAMEADDITION;ADRESSE;ADDITION;12345;VILLE\n'
@@ -395,6 +397,19 @@ class ResubscribingTest(AbstractExportTest):
 
     def get_company_without_name_subscriber_line(self):
         return u'GOOGLE;;ADDRESS;;;USA\n'
+
+    def test_four_digit_cp(self):
+        """Test an exported line with a 4 digit subscriber"""
+        sub = self.set_regular_subscriber() 
+        sub.issues_to_receive = 0
+        sub.post_code = 6345
+        sub.save()
+        self.exporter.do_export()
+
+        actual_line = get_second_line()
+        expected_line = self.four_digit_cp_subscriber_line 
+
+        self.assertEqual(expected_line, actual_line)
 
 class EmailExporterTest(AbstractExportTest):
     """This class tests the fonctionnality to unload the email list of

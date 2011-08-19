@@ -10,6 +10,24 @@ import codecs
 import unicodedata
 import gaabo_conf
 
+# Module functions definitions
+
+def date_string_from_iso(iso_date_string):
+    if iso_date_string is not None:
+        items = iso_date_string.split('-')
+        items.reverse()
+        return '/'.join(items)
+    else:
+        return None
+
+
+def format_postcode(postcode):
+    """Format the post code as a 5 digit string"""
+    if (unicode(postcode).isdigit() and postcode != 0):
+        return '%05d' % postcode
+    else:
+        return ''
+
 class AbstractExporter(object):
     """Object parent of all the exporters. It's useless to instanciate it"""
     def __init__(self, file_path):
@@ -93,7 +111,7 @@ class RoutageExporter(AbstractExporter):
         line.append(self.format_string(sql_row[3])[0:32])
         line.append(self.format_string(sql_row[4])[0:32])
         line.append(self.format_string(sql_row[5])[0:32])
-        postcode = self.format_postcode(sql_row[6])
+        postcode = format_postcode(sql_row[6])
         line.append(postcode[0:5])
         line.append(self.format_string(sql_row[7][0:26]))
         line.extend(['']*self.OUTPUT_RIGHT_PADDING)
@@ -106,12 +124,6 @@ class RoutageExporter(AbstractExporter):
         new_string = new_string.encode('ascii', 'ignore')
         return new_string.upper()
 
-    def format_postcode(self, postcode):
-        """Format the post code as a 5 digit string"""
-        if (unicode(postcode).isdigit() and postcode != 0):
-            return '%05d' % postcode
-        else:
-            return ''
 
 #####
 
@@ -187,11 +199,8 @@ class ReSubscribeExporter(AbstractExporter):
         return row[7].upper()
 
     def _get_post_code(self, row):
-        postcode = row[6]
-        if postcode != 0:
-            return str(postcode)
-        else:
-            return ''
+        return format_postcode(row[6])
+
 
 #####
 
@@ -280,10 +289,3 @@ class EmailExporter(AbstractExporter):
 
         self.close_resources()
 
-def date_string_from_iso(iso_date_string):
-    if iso_date_string is not None:
-        items = iso_date_string.split('-')
-        items.reverse()
-        return '/'.join(items)
-    else:
-        return None
