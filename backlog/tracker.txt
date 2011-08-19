@@ -1,11 +1,12 @@
 ==TODO==
-    L'extraction des abonnes pour le mailing de reabonnement ne prend pas en
-    compte le champ "complement de nom"
 
     La gestion de l'encodage des inputs se fait en separant UTF-8 du
     reste. Il faut trouver qqc de plus elegant.
     
 ==DONE==
+    L'extraction des abonnes pour le mailing de reabonnement ne prend pas en
+    compte le champ "complement de nom"
+
     Mettre en place un centrage vertical des cellules dans le
     formulaire de saisie.
 

@@ -45,16 +45,15 @@ class RoutageExporter(AbstractExporter):
         """Init method open a file with ascii encoding, expected by routing
         service."""
         AbstractExporter.__init__(self, file_path)
-       
 
     def do_export(self):
-        '''Export method to build a routage file for regular issue sending'''
+        """Export method to build a routage file for regular issue sending"""
         self.query = self.get_regular_issue_query()
         self.export_common()
 
     def do_export_special_issue(self):
-        '''Export method for special issues that are not decremented from
-        issues_to_receive field'''
+        """Export method for special issues that are not decremented from
+        issues_to_receive field"""
         self.query = self.get_special_issue_query()
         self.export_common()
 
@@ -71,7 +70,7 @@ class RoutageExporter(AbstractExporter):
         return query
 
     def export_common(self):
-        '''Common code to export for routage service'''
+        """Common code to export for routage service"""
         cursor = self.conn.cursor()
         try:
             result = cursor.execute(self.query)
@@ -117,9 +116,10 @@ class RoutageExporter(AbstractExporter):
 #####
 
 class ReSubscribeExporter(AbstractExporter):
-    """This class extact a CSV file for the re6subscribing mailing campaign"""
+    """This class extact a CSV file for the re-subscribing mailing campaign"""
 
-    QUERY = """SELECT firstname, lastname, company, address, address_addition,
+    QUERY = """SELECT firstname, lastname, company,
+    name_addition, address, address_addition,
     post_code, city FROM subscribers WHERE issues_to_receive = 0"""
 
     def __init__(self, file_path):
@@ -135,7 +135,7 @@ class ReSubscribeExporter(AbstractExporter):
 
     def _write_header(self):
         """Write header line in export file"""
-        header = u'Destinataire;Adresse;Complement Adresse;' + \
+        header = u'Destinataire;Adresse1;Adresse2;Adresse3;' + \
                 u'Code Postal;Ville / Pays\n'
         self.file_pointer.write(header)
 
@@ -153,14 +153,15 @@ class ReSubscribeExporter(AbstractExporter):
     def _write_in_file(self, row):
         """Write a data row in the file"""
         line = []
-        line.append(self.__get_recipient(row))
-        line.append(self.__get_address(row))
-        line.append(self.__get_address_addition(row))
-        line.append(self.__get_post_code(row))
-        line.append(self.__get_city(row))
+        line.append(self._get_recipient(row))
+        line.append(self._get_name_addition(row))
+        line.append(self._get_address(row))
+        line.append(self._get_address_addition(row))
+        line.append(self._get_post_code(row))
+        line.append(self._get_city(row))
         self.file_pointer.write(';'.join(line) + '\n') 
 
-    def __get_recipient(self, row):
+    def _get_recipient(self, row):
         """Extract recipient field from a data row"""
         firstname = row[0].upper()
         lastname = row[1].upper()
@@ -173,17 +174,20 @@ class ReSubscribeExporter(AbstractExporter):
         else:
             return ' '.join([firstname, lastname, company]).strip()
 
-    def __get_address(self, row):
+    def _get_name_addition(self, row):
         return row[3].upper()
 
-    def __get_address_addition(self, row):
+    def _get_address(self, row):
         return row[4].upper()
 
-    def __get_city(self, row):
-        return row[6].upper()
+    def _get_address_addition(self, row):
+        return row[5].upper()
 
-    def __get_post_code(self, row):
-        postcode = row[5]
+    def _get_city(self, row):
+        return row[7].upper()
+
+    def _get_post_code(self, row):
+        postcode = row[6]
         if postcode != 0:
             return str(postcode)
         else:

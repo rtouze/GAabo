@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''This module tests the exporters classes for subscriber list'''
+"""This module tests the exporters classes for subscriber list"""
 
 import unittest
 import os
@@ -23,7 +23,7 @@ class AbstractExportTest(unittest.TestCase):
         self.exporter = None
 
     def tearDown(self):
-        '''Delete generated file'''
+        """Delete generated file"""
         os.remove(TEST_FILE)
 
     def export_and_get_first_line(self):
@@ -90,8 +90,8 @@ class RoutageExportTest(AbstractExportTest):
         self.assertEquals(splitted_line[15], u'\n')
 
     def test_subscriber_without_remaining_issue(self):
-        '''Test if a subscriber that has no issue left will not receive a free
-        number :)'''
+        """Test if a subscriber that has no issue left will not receive a free
+        number :)"""
         subscriber = Subscriber()
         subscriber.lastname = 'toto'
         subscriber.issues_to_receive = 1
@@ -104,7 +104,7 @@ class RoutageExportTest(AbstractExportTest):
         self.__test_presence_toto_tata()
 
     def __test_presence_toto_tata(self):
-        '''Test if exported file contains toto but not tata'''
+        """Test if exported file contains toto but not tata"""
         file_pointer = open(TEST_FILE, 'r')
         has_toto = 0
         has_tata = 0
@@ -120,7 +120,7 @@ class RoutageExportTest(AbstractExportTest):
         self.assertEquals(has_tata, 0, 'tata found')
 
     def test_export_for_special_issues(self):
-        '''Test the function to export subscriber list to send special issue'''
+        """Test the function to export subscriber list to send special issue"""
         subscriber = Subscriber()
         subscriber.lastname = 'toto'
         subscriber.hors_serie1 = 1
@@ -139,7 +139,7 @@ class RoutageExportTest(AbstractExportTest):
         self.__test_presence_toto_tata()
 
     def test_field_length(self):
-        '''test if the fields in the output file does not exceed character limits'''
+        """test if the fields in the output file does not exceed character limits"""
         big_string = ''.join(['b' for i in xrange(1, 40)])
         subscriber = Subscriber()
         subscriber.lastname = big_string
@@ -286,8 +286,9 @@ class ResubscribingTest(AbstractExportTest):
 
     Bellow is the description of what we expect for field in the file:
     - firstname lastname and / or company
-    - address
-    - address addition (useful for subscribers abroad)
+    - address1 (names addition)
+    - address2 (address)
+    - address2 (address addition)
     - post code
     - city or country
 
@@ -298,6 +299,11 @@ class ResubscribingTest(AbstractExportTest):
         """Setup class. Initialize in memory db"""
         AbstractExportTest.setUp(self)
         self.exporter = subscriber_exporter.ReSubscribeExporter(TEST_FILE)
+        self.regular_subscriber_line = \
+                'PRENOM NOM;NAMEADDITION;ADRESSE;ADDITION;12345;VILLE\n'
+        self.company_subscriber_line = \
+                'CAPGEMINI, POUR PRENOM NOM;' + \
+                'NAMEADDITION;ADRESSE;ADDITION;12345;VILLE\n'
 
     def test_regular_subscriber(self):
         """Tests if the coordinates of a regular subscriber are OK in the
@@ -306,24 +312,22 @@ class ResubscribingTest(AbstractExportTest):
         self.exporter.do_export()
         actual_line = get_second_line()
 
-        expected_line = self.get_regular_subscriber_line() 
+        expected_line = self.regular_subscriber_line 
 
         self.assertEqual(expected_line, actual_line)
-        
-    def get_regular_subscriber_line(self):
-        return u'PRENOM NOM;ADRESSE;ADDITION;12345;VILLE\n'
 
     def init_regular_subscriber(self):
         """Initialize a regular subscriber, in France, without company with no
         issue to receive."""
-        sub = self.get_regular_subscriber() 
+        sub = self.set_regular_subscriber() 
         sub.issues_to_receive = 0
         sub.save()
 
-    def get_regular_subscriber(self):
+    def set_regular_subscriber(self):
         sub = Subscriber()
         sub.lastname = 'Nom'
         sub.firstname = 'Prenom'
+        sub.name_addition = 'NameAddition'
         sub.address = 'Adresse'
         sub.address_addition = 'Addition'
         sub.post_code = '12345'
@@ -333,8 +337,8 @@ class ResubscribingTest(AbstractExportTest):
     def test_header_line(self):
         actual_line = self.export_and_get_first_line()
 
-        expected_line = u'Destinataire;Adresse;Complement Adresse;' + \
-                u'Code Postal;Ville / Pays\n'
+        expected_line = u'Destinataire;Adresse1;Adresse2;' + \
+                u'Adresse3;Code Postal;Ville / Pays\n'
 
         self.assertEqual(expected_line, actual_line)
 
@@ -350,7 +354,7 @@ class ResubscribingTest(AbstractExportTest):
     def init_regular_subscriber_with_issues_to_receive(self):
         """Initialize a regular subscriber, in France, without company with one
         issue to receive."""
-        sub = self.get_regular_subscriber() 
+        sub = self.set_regular_subscriber() 
         sub.issues_to_receive = 1
         sub.save()
 
@@ -359,19 +363,17 @@ class ResubscribingTest(AbstractExportTest):
         self.exporter.do_export()
 
         actual_line = get_second_line()
-        expected_line = self.get_company_subscriber_line()
+        expected_line = self.company_subscriber_line
 
         self.assertEqual(expected_line, actual_line)
 
     def init_company_subscriber(self):
         """Initialize a regular subscriber with a company name"""
-        sub = self.get_regular_subscriber() 
+        sub = self.set_regular_subscriber() 
         sub.issues_to_receive = 0
         sub.company = 'Capgemini'
         sub.save()
 
-    def get_company_subscriber_line(self):
-        return u'CAPGEMINI, POUR PRENOM NOM;ADRESSE;ADDITION;12345;VILLE\n'
 
     def test_company_without_lastname(self):
         self.init_company_subscriber_without_name()
@@ -392,7 +394,7 @@ class ResubscribingTest(AbstractExportTest):
         sub.save()
 
     def get_company_without_name_subscriber_line(self):
-        return u'GOOGLE;ADDRESS;;;USA\n'
+        return u'GOOGLE;;ADDRESS;;;USA\n'
 
 class EmailExporterTest(AbstractExportTest):
     """This class tests the fonctionnality to unload the email list of
