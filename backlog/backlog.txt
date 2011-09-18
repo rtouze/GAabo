@@ -1,4 +1,7 @@
 ==TODO==
+    Je veux voir le nombre d'abonnes en base dans la barre de notification. Ce
+    nombre est mis a jour a chaque creation / suppression d'abonne
+
     Pour l'export des adresses mail, mettre une adresse par ligne de fichier.
 
     Mettre un bouton dans l'IHM pour la purge des anciens abonnes
@@ -8,6 +11,9 @@
 
     Je veux generer le listing des abonnes avec leur adresse pour le
     mailing de reabonnement
+
+    Je veux pouvoir envoyer un mail a l'abonne via l'interface pour dire que
+    son abonnement a ete pris en compte
 
     Je veux naviguer dans les boutons avec des raccourcis claviers
 
