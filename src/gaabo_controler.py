@@ -18,6 +18,16 @@ class Controler(object):
             subs_list.extend(Subscriber.get_subscribers_from_company(company))
         if email:
             subs_list.extend(Subscriber.get_subscribers_from_email(email))
+
+        identifiers = []
+        index = 0
+        for subscriber in subs_list:
+            if subscriber.identifier in identifiers:
+                subs_list.pop(index)
+            else:
+                identifiers.append(subscriber.identifier)
+            index += 1
+        
         return subs_list
 
     def delete_subscriber(self, subscriber):

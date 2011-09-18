@@ -135,7 +135,6 @@ class EditionPanel(wx.Panel):
                         size=(200, FIELD_HEIGHT)
                         )
             else:
-                #TODO il faudra faire varier selon les types de champ
                 self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
                         self,
                         -1,
