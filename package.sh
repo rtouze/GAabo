@@ -5,21 +5,22 @@
 
 VERSION=$1
 TYPE=$2
-packet_name=gaabo_${VERSION}
+packet_name=gaabo_$VERSION
 
-echo "Creation de ${packet_name}"
+echo "Creation de $packet_name"
 
-mkdir ${packet_name}
-cp src/*.py ${packet_name}
+mkdir $packet_name
+cp src/*.py $packet_name
+rm $packet_name/test_*.py
 
 case ${TYPE} in
-    zip) zip -r ${packet_name}.zip ${packet_name};;
-    gz) tar czf ${packet_name}.tar.gz ${packet_name};;
-    bz2) tar cjf ${packet_name}.tar.bz2 ${packet_name};;
+    zip) zip -r $packet_name.zip $packet_name;;
+    gz) tar czf $packet_name.tar.gz $packet_name;;
+    bz2) tar cjf $packet_name.tar.bz2 ${packet_name};;
     *) echo "Mauvais type"; exit 1;;
 esac
 
-zipped=`ls ${packet_name}.*`
-rm -rf ${packet_name}
-echo "Le packet ${zipped} est genere"
+zipped=`ls $packet_name.*`
+rm -rf $packet_name
+echo "Le packet $zipped est genere"
 exit 0
