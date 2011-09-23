@@ -15,15 +15,12 @@ class MenuBar(wx.Panel):
         frame methods. When its called, the frame must have a parent panel
         created."""
         wx.Panel.__init__(self, frame.parent_panel, -1)
+
         self.frame = frame
         self.buttons = {} 
-
         self.create_buttons()
-
         self.put_buttons_in_grid()
-
         self.bind_events()
-
 
     def create_buttons(self):
         """Create the butons that will be in the MenuBar"""
@@ -43,15 +40,21 @@ class MenuBar(wx.Panel):
                 self.frame.SPECIAL_ISSUE_BTN_ID,
                 u'Génération liste de mailing'
                 )
+        self.buttons['gen_paper_mailing'] = wx.Button(
+                self,
+                self.frame.SPECIAL_ISSUE_BTN_ID,
+                u'Génération liste mailing papier'
+                )
 
     def put_buttons_in_grid(self):
         """Generate a GridSizer that will contain the buttons"""
-        menu_buttons_grid = wx.GridSizer(4, 1, 10, 0)
+        menu_buttons_grid = wx.GridSizer(6, 1, 10, 0)
         menu_buttons_grid.Add(self.buttons['create'])
         menu_buttons_grid.Add(self.buttons['modify'])
         menu_buttons_grid.Add(self.buttons['send_issue'])
         menu_buttons_grid.Add(self.buttons['send_special_issue'])
         menu_buttons_grid.Add(self.buttons['gen_mailing'])
+        menu_buttons_grid.Add(self.buttons['gen_paper_mailing'])
         self.SetSizer(menu_buttons_grid)
 
     def bind_events(self):
@@ -75,6 +78,10 @@ class MenuBar(wx.Panel):
         self.bind_btn_evt(
                 self.frame.generate_mailing_list,
                 self.buttons['gen_mailing']
+                ) 
+        self.bind_btn_evt(
+                self.frame.generate_paper_mailing_list,
+                self.buttons['gen_paper_mailing']
                 ) 
 
     def bind_btn_evt(self, method, button):

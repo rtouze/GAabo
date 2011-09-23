@@ -251,6 +251,19 @@ class GaaboFrame(wx.Frame):
                 )
         dialog.ShowModal()
 
+    def generate_paper_mailing_list(self, event):
+        """Generate the email list for resubscription campain"""
+        file_name = '../resubscription.csv'
+        exporter = subscriber_exporter.ReSubscribeExporter(file_name)
+        exporter.do_export()
+        dialog = wx.MessageDialog(
+                None,
+                u'Fichier %s généré' % file_name,
+                'Confirmation',
+                style=wx.OK
+                )
+        dialog.ShowModal()
+
 if __name__ == '__main__':
     """NOTE: configuration
     Sous windows, le home dir est identifie comme %HOMEDRIVE%\%HOMEPATH%
