@@ -285,7 +285,7 @@ class EmailExporter(AbstractExporter):
             file_content.append(row[0].lower())
 
         if file_content != []:
-            self.file_pointer.write(','.join(file_content) + '\n')
+            self.file_pointer.write('\n'.join(file_content) + '\n')
 
         self.close_resources()
 

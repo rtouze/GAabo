@@ -427,9 +427,9 @@ class EmailExporterTest(AbstractExportTest):
         subscriber.issues_to_receive = 0
         subscriber.email_address = 'toto@example.com'
         subscriber.save()
-        line = self.export_and_get_first_line()
+        lines = self.export_and_get_lines()
 
-        self.assertEqual('toto@example.com', line.strip())
+        self.assertEqual('toto@example.com', lines.strip())
 
     def test_two_email(self):
         """Tests when we have two emails in generated file"""
@@ -441,9 +441,9 @@ class EmailExporterTest(AbstractExportTest):
         subscriber.email_address = 'tata@example.com'
         subscriber.issues_to_receive = 0
         subscriber.save()
-        line = self.export_and_get_first_line()
+        lines = self.export_and_get_lines()
 
-        self.assertEqual('toto@example.com,tata@example.com\n', line)
+        self.assertEqual('toto@example.com\ntata@example.com\n', lines)
 
     def test_remaining_issues_subscriber(self):
         """Tests when the subscriber has remaining issues"""
@@ -451,8 +451,9 @@ class EmailExporterTest(AbstractExportTest):
         subs.issues_to_receive = 1
         subs.email_address = 'tata@example.com'
         subs.save()
-        line = self.export_and_get_first_line()
-        self.assertEqual('', line)
+        lines = self.export_and_get_lines()
+
+        self.assertEqual('', lines)
 
     def test_remaining_special_issues_subscriber(self):
         """Tests when the subscriber has remaining special issues"""
@@ -461,8 +462,9 @@ class EmailExporterTest(AbstractExportTest):
         subs.hors_serie1 = 1
         subs.email_address = 'tata@example.com'
         subs.save()
-        line = self.export_and_get_first_line()
-        self.assertEqual('', line)
+        lines = self.export_and_get_lines()
+
+        self.assertEqual('', lines)
 
     def test_subscriber_with_regular_and_special(self):
         """Test when subscriber has both remaining regular and special issues"""
@@ -471,8 +473,9 @@ class EmailExporterTest(AbstractExportTest):
         subs.hors_serie1 = 1
         subs.email_address = 'tata@example.com'
         subs.save()
-        line = self.export_and_get_first_line()
-        self.assertEqual('', line)
+        lines = self.export_and_get_lines()
+
+        self.assertEqual('', lines)
 
     def test_email_in_lowercase(self):
         """Tests that in generated file, the emails are in lower case"""
@@ -480,8 +483,9 @@ class EmailExporterTest(AbstractExportTest):
         subscriber.issues_to_receive = 0
         subscriber.email_address = 'tOTo@exAmpLE.COm'
         subscriber.save()
-        line = self.export_and_get_first_line()
-        self.assertEqual('toto@example.com', line.strip())
+        lines = self.export_and_get_lines()
+         
+        self.assertEqual('toto@example.com', lines.strip())
 
     def test_empty_email(self):
         """Tests what appens when a subscriber has no email"""
@@ -493,10 +497,14 @@ class EmailExporterTest(AbstractExportTest):
         subscriber.email_address = ''
         subscriber.issues_to_receive = 0
         subscriber.save()
-        line = self.export_and_get_first_line()
+        lines = self.export_and_get_lines()
 
-        self.assertEqual('toto@example.com\n', line)
+        self.assertEqual('toto@example.com\n', lines)
 
+    def export_and_get_lines(self):
+        """Performs the export and returns the content into a string"""
+        self.exporter.do_export()
+        return read_whole_file()
     
 def reset_test_db():
     conn = sqlite3.Connection('../databases/test.db')
@@ -524,6 +532,13 @@ def get_first_line():
     line = test_file.readline()
     test_file.close()
     return line
+
+def read_whole_file():
+    """Return the conten of the test file into a string"""
+    test_file = open_test_file()
+    content = test_file.read()
+    test_file.close()
+    return content
 
 if __name__ == '__main__':
     unittest.main()
