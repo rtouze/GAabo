@@ -1,2 +1,6 @@
 doc_externes
 databases
+tags
+*.zip
+.*.swp
+archive
