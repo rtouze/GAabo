@@ -203,8 +203,6 @@ class TestSubscriber(unittest.TestCase):
         # won't happen
         #self.assertEqual(actual_date.strftime('%d/%m/%Y'), '01/01/1900')
 
-
-
     def test_new_subscriber_id(self):
         """Test if we can get the ID of a saved Subscriber"""
         self.sub.lastname='toto'
@@ -224,6 +222,21 @@ class TestSubscriber(unittest.TestCase):
         user = Subscriber.get_subscribers_from_email(email)[0]
         self.assertEqual(user.firstname, 'email')
         self.assertEqual(user.lastname, 'user')
+
+    def test_subscription_counter(self):
+        """Test subscription counter retrieval"""
+        sub = Subscriber()
+        sub.lastname = 'toto'
+        sub.save()
+        sub = Subscriber()
+        sub.lastname = 'titi'
+        sub.save()
+        sub = Subscriber()
+        sub.lastname = 'tata'
+        sub.save()
+
+        self.assertEqual(3, Subscriber.get_count())
+
 
 class CorrectDateTest(unittest.TestCase):
     """This class tests if the function correct_date in module subscriber works
@@ -259,6 +272,8 @@ class CorrectDateTest(unittest.TestCase):
     def test_with_non_digit_strings(self):
         """Test what happens when we send garbage as params"""
         self.assertFalse(is_correct_date('tic', 'tac', 'toe'))
+
+
         
 
 if __name__ == '__main__':

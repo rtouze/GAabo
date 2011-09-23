@@ -75,6 +75,11 @@ class Subscriber(object):
         adhoc_dao = SubscriberDAO()
         return adhoc_dao.get_end_of_subscribtion()
 
+    @classmethod
+    def get_count(cls):
+        adhoc_dao = SubscriberDAO()
+        return adhoc_dao.get_count()
+
     def save(self):
         if self.identifier == -1:
             self.dao.save(self)
@@ -247,6 +252,11 @@ class SubscriberDAO(object):
         sql = """SELECT * FROM subscribers WHERE issues_to_receive < 2"""
         self.result = self.cursor.execute(sql)
         return self.fetch_result()
+
+    def get_count(self):
+        sql = """SELECT COUNT(*) FROM subscribers"""
+        result = self.cursor.execute(sql)
+        for row in result: return row[0]
 
 # Module Functions
 

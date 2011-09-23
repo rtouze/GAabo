@@ -47,3 +47,6 @@ class Controler(object):
         exporter = RoutageExporter(file_path)
         exporter.do_export_special_issue()
 
+    def get_subscription_count(self):
+        return Subscriber.get_count()
+

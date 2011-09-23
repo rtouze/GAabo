@@ -15,27 +15,69 @@ class MenuBar(wx.Panel):
         frame methods. When its called, the frame must have a parent panel
         created."""
         wx.Panel.__init__(self, frame.parent_panel, -1)
+        self.frame = frame
+        self.buttons = {} 
 
-        button_create = wx.Button(self, -1, u'Créer abonné')
-        button_modify = wx.Button(self, -1, u'Modifier / Supprimer abonné')
-        button_send_issue = wx.Button(self, -1, u'Expédier nouveau numéro')
-        button_send_special_issue = wx.Button(
+        self.create_buttons()
+
+        self.put_buttons_in_grid()
+
+        self.bind_events()
+
+
+    def create_buttons(self):
+        """Create the butons that will be in the MenuBar"""
+        self.buttons['button_create'] = \
+                wx.Button(self, -1, u'Créer abonné')
+        self.buttons['button_modify'] = \
+                wx.Button(self, -1, u'Modifier / Supprimer abonné')
+        self.buttons['button_send_issue'] = \
+                wx.Button(self, -1, u'Expédier nouveau numéro')
+        self.buttons['button_send_special_issue'] = wx.Button(
                 self,
-                frame.SPECIAL_ISSUE_BTN_ID,
+                self.frame.SPECIAL_ISSUE_BTN_ID,
                 u'Expédier un hors-serie'
                 )
 
+    def put_buttons_in_grid(self):
+        """Generate a GridSizer that will contain the buttons"""
         menu_buttons_grid = wx.GridSizer(4, 1, 10, 0)
-        menu_buttons_grid.Add(button_create)
-        menu_buttons_grid.Add(button_modify)
-        menu_buttons_grid.Add(button_send_issue)
-        menu_buttons_grid.Add(button_send_special_issue)
+        menu_buttons_grid.Add(self.buttons['button_create'])
+        menu_buttons_grid.Add(self.buttons['button_modify'])
+        menu_buttons_grid.Add(self.buttons['button_send_issue'])
+        menu_buttons_grid.Add(self.buttons['button_send_special_issue'])
         self.SetSizer(menu_buttons_grid)
 
-        frame.Bind(wx.EVT_BUTTON, frame.show_subscriber_creation_form, id=button_create.GetId())
-        frame.Bind(wx.EVT_BUTTON, frame.show_search_form, id=button_modify.GetId())
-        frame.Bind(wx.EVT_BUTTON, frame.show_empty_exporter_panel, id=button_send_issue.GetId())
-        frame.Bind(wx.EVT_BUTTON, frame.show_empty_exporter_panel, id=frame.SPECIAL_ISSUE_BTN_ID)
+    def bind_events(self):
+        """Bind events to button in the menubar"""
+        self.bind_btn_evt(
+                self.frame.show_subscriber_creation_form,
+                self.buttons['button_create']
+                ) 
+        self.bind_btn_evt(
+                self.frame.show_search_form,
+                self.buttons['button_modify']
+                ) 
+        self.bind_btn_evt(
+                self.frame.show_empty_exporter_panel,
+                self.buttons['button_send_issue']
+                ) 
+        self.bind_btn_evt(
+                self.frame.show_empty_exporter_panel,
+                self.buttons['button_send_special_issue']
+                ) 
+        #frame.Bind(wx.EVT_BUTTON, frame.show_subscriber_creation_form, id=button_create.GetId())
+        #frame.Bind(wx.EVT_BUTTON, frame.show_search_form, id=button_modify.GetId())
+        #frame.Bind(wx.EVT_BUTTON, frame.show_empty_exporter_panel, id=button_send_issue.GetId())
+        #frame.Bind(wx.EVT_BUTTON, frame.show_empty_exporter_panel, id=frame.SPECIAL_ISSUE_BTN_ID)
+
+    def bind_btn_evt(self, method, button):
+        self.frame.Bind(
+                wx.EVT_BUTTON,
+                method,
+                id=button.GetId()
+                )
+
 
 #####
 
