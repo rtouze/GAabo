@@ -27,59 +27,63 @@ class MenuBar(wx.Panel):
 
     def create_buttons(self):
         """Create the butons that will be in the MenuBar"""
-        self.buttons['button_create'] = \
+        self.buttons['create'] = \
                 wx.Button(self, -1, u'Créer abonné')
-        self.buttons['button_modify'] = \
+        self.buttons['modify'] = \
                 wx.Button(self, -1, u'Modifier / Supprimer abonné')
-        self.buttons['button_send_issue'] = \
+        self.buttons['send_issue'] = \
                 wx.Button(self, -1, u'Expédier nouveau numéro')
-        self.buttons['button_send_special_issue'] = wx.Button(
+        self.buttons['send_special_issue'] = wx.Button(
                 self,
                 self.frame.SPECIAL_ISSUE_BTN_ID,
                 u'Expédier un hors-serie'
+                )
+        self.buttons['gen_mailing'] = wx.Button(
+                self,
+                self.frame.SPECIAL_ISSUE_BTN_ID,
+                u'Génération liste de mailing'
                 )
 
     def put_buttons_in_grid(self):
         """Generate a GridSizer that will contain the buttons"""
         menu_buttons_grid = wx.GridSizer(4, 1, 10, 0)
-        menu_buttons_grid.Add(self.buttons['button_create'])
-        menu_buttons_grid.Add(self.buttons['button_modify'])
-        menu_buttons_grid.Add(self.buttons['button_send_issue'])
-        menu_buttons_grid.Add(self.buttons['button_send_special_issue'])
+        menu_buttons_grid.Add(self.buttons['create'])
+        menu_buttons_grid.Add(self.buttons['modify'])
+        menu_buttons_grid.Add(self.buttons['send_issue'])
+        menu_buttons_grid.Add(self.buttons['send_special_issue'])
+        menu_buttons_grid.Add(self.buttons['gen_mailing'])
         self.SetSizer(menu_buttons_grid)
 
     def bind_events(self):
         """Bind events to button in the menubar"""
         self.bind_btn_evt(
                 self.frame.show_subscriber_creation_form,
-                self.buttons['button_create']
+                self.buttons['create']
                 ) 
         self.bind_btn_evt(
                 self.frame.show_search_form,
-                self.buttons['button_modify']
+                self.buttons['modify']
                 ) 
         self.bind_btn_evt(
                 self.frame.show_empty_exporter_panel,
-                self.buttons['button_send_issue']
+                self.buttons['send_issue']
                 ) 
         self.bind_btn_evt(
                 self.frame.show_empty_exporter_panel,
-                self.buttons['button_send_special_issue']
+                self.buttons['send_special_issue']
                 ) 
-        #frame.Bind(wx.EVT_BUTTON, frame.show_subscriber_creation_form, id=button_create.GetId())
-        #frame.Bind(wx.EVT_BUTTON, frame.show_search_form, id=button_modify.GetId())
-        #frame.Bind(wx.EVT_BUTTON, frame.show_empty_exporter_panel, id=button_send_issue.GetId())
-        #frame.Bind(wx.EVT_BUTTON, frame.show_empty_exporter_panel, id=frame.SPECIAL_ISSUE_BTN_ID)
+        self.bind_btn_evt(
+                self.frame.generate_mailing_list,
+                self.buttons['gen_mailing']
+                ) 
 
     def bind_btn_evt(self, method, button):
+        """Bind a callback to a button press event"""
         self.frame.Bind(
                 wx.EVT_BUTTON,
                 method,
                 id=button.GetId()
                 )
-
-
-#####
 
 class EditionPanel(wx.Panel):
     """This class represent the subscriber edition panel"""
@@ -104,10 +108,6 @@ class EditionPanel(wx.Panel):
         for pair in self.pairs:
             grid.Add(pair[0], flag=wx.ALIGN_CENTER_VERTICAL)
             grid.Add(pair[1], flag=wx.ALIGN_CENTER_VERTICAL)
-
-        # TODO Exemples RadioButtons
-        # self.rb1 = wx.RadioButton(panel, -1, 'Value A', (10, 10), style=wx.RB_GROUP)
-        # self.rb2 = wx.RadioButton(panel, -1, 'Value B', (10, 30)) self.rb3 =
 
         box.Add(grid)
         box.Add(self.generate_button_box())

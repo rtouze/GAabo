@@ -4,11 +4,13 @@
 import wx
 import gaabo_conf
 import gaabo_constants
+import sys
+import datetime
+
 from gaabo_controler import Controler
 from subscriber import Subscriber
-import sys
+import subscriber_exporter
 import panels
-import datetime
 
 class GaaboFrame(wx.Frame):
 
@@ -230,10 +232,24 @@ class GaaboFrame(wx.Frame):
                 self.controler.decrement_normal_issues_to_receive()
 
     def show_file_browser(self, event):
+        """Display a browser to navigate through the files"""
         browser = wx.FileDialog(self, "Choisir fichier de destination", style=wx.SAVE)
         if browser.ShowModal() == wx.ID_OK:
             exported_file_path = browser.GetPath()
             self.show_exporter_panel(exported_file_path)
+
+    def generate_mailing_list(self, event):
+        """Generate the email list for resubscription campain"""
+        file_name = '../email_resubscription.txt'
+        exporter = subscriber_exporter.EmailExporter(file_name)
+        exporter.do_export()
+        dialog = wx.MessageDialog(
+                None,
+                u'Fichier %s généré' % file_name,
+                'Confirmation',
+                style=wx.OK
+                )
+        dialog.ShowModal()
 
 if __name__ == '__main__':
     """NOTE: configuration
