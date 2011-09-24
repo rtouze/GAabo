@@ -159,40 +159,55 @@ class EditionPanel(wx.Panel):
         else:
             if subscriber_field_name == 'subscription_date':
                 subscr_date = self.subscriber.subscription_date
-                if subscr_date is None:
-                    self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
-                            self,
-                            -1,
-                            size=(200, FIELD_HEIGHT)
-                            )
-                else:
-                    self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
-                            self,
-                            -1,
-                            subscr_date.strftime('%d/%m/%Y'),
-                            size=(200, FIELD_HEIGHT)
-                            )
+                field_value = None
+                if subscr_date is not None:
+                    field_value = subscr_date.strftime('%d/%m/%Y')
+
+                self.frame.field_widget_dict[field_label_id] = \
+                        self.set_text_field(field_value)
+
             elif subscriber_field_name == 'post_code':
-                post_code = self.subscriber.post_code
+                post_code = self.subscriber.address.post_code
                 formatted_post_code = ''
                 if (unicode(post_code).isdigit() and post_code != 0):
                     formatted_post_code = '%05d' % post_code
-                self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
-                        self,
-                        -1,
-                        formatted_post_code,
-                        size=(200, FIELD_HEIGHT)
-                        )
+                self.frame.field_widget_dict[field_label_id] = \
+                        self.set_text_field(formatted_post_code)
+            elif subscriber_field_name == 'address':
+                field_value = self.subscriber.address.address1
+                self.frame.field_widget_dict[field_label_id] = \
+                        self.set_text_field(field_value)
+            elif subscriber_field_name == 'address_addition':
+                field_value = self.subscriber.address.address2
+                self.frame.field_widget_dict[field_label_id] = \
+                        self.set_text_field(field_value)
+            elif subscriber_field_name == 'city':
+                field_value = self.subscriber.address.city
+                self.frame.field_widget_dict[field_label_id] = \
+                        self.set_text_field(field_value)
+
             else:
-                self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
-                        self,
-                        -1,
-                        unicode(
-                            self.subscriber.__dict__[subscriber_field_name]
-                            ),
-                        size=(200, FIELD_HEIGHT)
-                        )
+                field_value = self.subscriber.__dict__[subscriber_field_name]
+                self.frame.field_widget_dict[field_label_id] = \
+                        self.set_text_field(field_value)
         return (label, self.frame.field_widget_dict[field_label_id])
+
+    def set_text_field(self, field_value=None):
+        """Returns an unicode formated TextCtrl containing field_value"""
+        if field_value is None:
+            widget = wx.TextCtrl(
+                    self,
+                    -1,
+                    size=(200, FIELD_HEIGHT)
+                    )
+        else:
+            widget = wx.TextCtrl(
+                    self,
+                    -1,
+                    unicode(field_value),
+                    size=(200, FIELD_HEIGHT)
+                    )
+        return widget
 
     def generate_button_box(self):
         """Generate the OK buton pqrt with the action binding"""

@@ -7,6 +7,7 @@ import datetime
 
 from subscriber import Subscriber
 from subscriber import is_correct_date
+from subscriber import Address
 import gaabo_conf
 
 class TestSubscriber(unittest.TestCase):
@@ -236,6 +237,21 @@ class TestSubscriber(unittest.TestCase):
         sub.save()
 
         self.assertEqual(3, Subscriber.get_count())
+
+    def test_subscriber_address(self):
+        sub = Subscriber()
+        address = Address()
+        sub.lastname = 'toto'
+        address.address1 = '11 rue bilou'
+        address.address2 = 'batiment 1'
+        address.post_code = '66066'
+        address.city = 'NYC'
+        sub.address = address
+        sub.save()
+
+        retrieved_sub = Subscriber.get_subscribers_from_lastname('toto')[0]
+        retieved_address = retrieved_sub.address
+        self.assertEqual('NYC', retieved_address.city)
 
 
 class CorrectDateTest(unittest.TestCase):

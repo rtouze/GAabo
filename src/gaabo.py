@@ -109,6 +109,7 @@ class GaaboFrame(wx.Frame):
         return (
                 field_name == 'hors_serie1' 
                 or field_name == 'issues_to_receive'
+                or field_name == 'post_code'
                 )
 
     def __write_date(self, key):
@@ -130,18 +131,32 @@ class GaaboFrame(wx.Frame):
             int_value = int(field_value)
         else:
             int_value = 0
-        self.current_edited_subscriber.__dict__[field_name] = int_value
+        if field_name == 'post_code':
+            self.current_edited_subscriber.address.post_code = int_value
+        else:
+            self.current_edited_subscriber.__dict__[field_name] = int_value
 
     def __write_field(self, key):
+        # TODO dirty, find some nice abstraction between view and model!
         subscriber_field_name = gaabo_constants.field_names[key][0]
-        if self.encoding == 'UTF-8':
-            self.current_edited_subscriber.__dict__[subscriber_field_name] = (
-                    unicode(self.field_widget_dict[key].GetValue())
-                    )
+        if subscriber_field_name == 'address':
+            self.current_edited_subscriber.address.address1 = \
+                    self.get_converted_field_value(key)
+        elif subscriber_field_name == 'address_addition':
+            self.current_edited_subscriber.address.address2 = \
+                    self.get_converted_field_value(key)
+        elif subscriber_field_name == 'city':
+            self.current_edited_subscriber.address.city = \
+                    self.get_converted_field_value(key)
         else:
-            self.current_edited_subscriber.__dict__[subscriber_field_name] = (
-                    unicode(self.field_widget_dict[key].GetValue(), self.encoding)
-                    )
+            self.current_edited_subscriber.__dict__[subscriber_field_name] = \
+            self.get_converted_field_value(key)
+
+    def get_converted_field_value(self, key):
+        if self.encoding == 'UTF-8':
+            return unicode(self.field_widget_dict[key].GetValue())
+        else:
+            return unicode(self.field_widget_dict[key].GetValue(), self.encoding)
 
     def show_search_form(self, event):
         self.right_panel.Destroy()
