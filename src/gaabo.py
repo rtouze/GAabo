@@ -30,6 +30,8 @@ class GaaboFrame(wx.Frame):
         self.searched_email_in = None
         self.subs_dict = {}
 
+        self.subscriber_values = {}
+
         self.setup_status_bar()
 
         self.current_edited_subscriber = None

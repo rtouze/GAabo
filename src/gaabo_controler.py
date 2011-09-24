@@ -1,14 +1,15 @@
 #!/usr/bin/env python
-'''
-This module contains a controler to make gaabo works
-'''
+"""This module contains a controler to make gaabo works"""
+
+__author__ = 'romain.touze@gmail.com'
 
 from subscriber import Subscriber
 from subscriber_exporter import RoutageExporter
 
 class Controler(object):
     def __init__(self):
-        pass
+        self.subscriber_values = {}
+        self.field_widget_dict = {}
 
     def get_searched_customer_list(self, lastname, company, email):
         subs_list = [] 
@@ -50,3 +51,25 @@ class Controler(object):
     def get_subscription_count(self):
         return Subscriber.get_count()
 
+
+    def save_subscriber_action(self, event):
+        """Called by the edition panel to save the subscriber in database"""
+        sub = {}
+        for key in self.field_widget_dict.keys():
+            sub[key] = self.field_widget_dict[key].GetValue()
+        adapter = SubscriberAdapter(sub)
+        self.subscriber_values = adapter.save_subscriber()
+
+class SubscriberAdapter(object):
+    """Adatpter to change a dict with subscriber values to a Subscriber
+    object"""
+    def __init__(self, subscriber_dict):
+        self.sub = subscriber_dict
+    def save_subscriber(self):
+        subscriber = Subscriber()
+        subscriber.lastname = self.sub['lastname']
+        subscriber.firstname = self.sub['firstname']
+        subscriber.email_address = self.sub['email_address']
+        subscriber.save()
+        self.sub['subscriber_id'] = subscriber.identifier
+        return self.sub

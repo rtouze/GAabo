@@ -23,7 +23,7 @@ class MenuBar(wx.Panel):
         self.bind_events()
 
     def create_buttons(self):
-        """Create the butons that will be in the MenuBar"""
+        """Create the buttons that will be in the MenuBar"""
         self.buttons['create'] = \
                 wx.Button(self, -1, u'Créer abonné')
         self.buttons['modify'] = \
@@ -103,19 +103,22 @@ class EditionPanel(wx.Panel):
 
         box = wx.BoxSizer(wx.VERTICAL)
         self.frame = frame
-        if frame.current_edited_subscriber is None:
-            self.subscriber = None
-        else:
-            self.subscriber = frame.current_edited_subscriber
         box.Add(self.get_panel_title())
         grid = wx.FlexGridSizer(20, 2, 5, 5)
         self.pairs = []
-        self.generate_pair_list()
+        self.controler = self.frame.controler
+        #self.generate_pair_list()
 
-        for pair in self.pairs:
-            grid.Add(pair[0], flag=wx.ALIGN_CENTER_VERTICAL)
-            grid.Add(pair[1], flag=wx.ALIGN_CENTER_VERTICAL)
-
+        for field_pair in gaabo_constants.field_names:
+            key = field_pair[0]
+            field = field_pair[1]
+            grid.Add(wx.StaticText(self, -1, field), flag=wx.ALIGN_CENTER_VERTICAL)
+            if key in self.controler.subscriber_values.keys():
+                value = unicode(self.controler.subscriber_values[key])
+            else:
+                value = None
+            self.controler.field_widget_dict[key] = self.set_text_field(value)
+            grid.Add(self.controler.field_widget_dict[key], flag=wx.ALIGN_CENTER_VERTICAL) 
         box.Add(grid)
         box.Add(self.generate_button_box())
         self.SetSizer(box)
@@ -123,7 +126,7 @@ class EditionPanel(wx.Panel):
     def get_panel_title(self):
         """Generate the title of the panel, wether we are creating a new
         subscriber or editing a new one."""
-        if self.subscriber is None:
+        if len(self.frame.subscriber_values) == 0:
             return wx.StaticText(self, -1, u'Édition d\'un nouvel abonne\n')
         else:
             return wx.StaticText(self, -1, u'Édition de l\'abonne\n')
@@ -214,9 +217,10 @@ class EditionPanel(wx.Panel):
         button_box = wx.BoxSizer(wx.HORIZONTAL)
         ok_button = wx.Button(self, -1, 'Ok')
         button_box.Add(ok_button)
+
         self.frame.Bind(
                 wx.EVT_BUTTON,
-                self.frame.save_subscriber_action,
+                self.controler.save_subscriber_action,
                 id=ok_button.GetId()
                 )
         return button_box
