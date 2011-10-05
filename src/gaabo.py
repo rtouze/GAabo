@@ -49,7 +49,7 @@ class GaaboFrame(wx.Frame):
     def setup_status_bar(self):
         self.status_bar = self.CreateStatusBar()
         self.status_bar.SetFieldsCount(3)
-        self.status_bar.SetStatusWidths([150, -1])
+        self.status_bar.SetStatusWidths([150, -1, -1])
         self.status_bar.SetStatusText('Base : %s' % gaabo_conf.db_name, 0)
         self.update_subscriber_counter()
 
