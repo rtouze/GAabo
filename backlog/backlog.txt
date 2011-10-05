@@ -1,16 +1,9 @@
 ==TODO==
-    Je veux voir le nombre d'abonnes en base dans la barre de notification. Ce
-    nombre est mis a jour a chaque creation / suppression d'abonne
-
-    Pour l'export des adresses mail, mettre une adresse par ligne de fichier.
 
     Mettre un bouton dans l'IHM pour la purge des anciens abonnes
 
     Je veux purger la base des abonnes n'ayant plus de numero ni de
     hors serie a recevoir
-
-    Je veux generer le listing des abonnes avec leur adresse pour le
-    mailing de reabonnement
 
     Je veux pouvoir envoyer un mail a l'abonne via l'interface pour dire que
     son abonnement a ete pris en compte
@@ -40,6 +33,14 @@
     Pour que le système soit centralisé
 
 ==DONE==
+    Je veux generer le listing des abonnes avec leur adresse pour le
+    mailing de reabonnement
+
+    Pour l'export des adresses mail, mettre une adresse par ligne de fichier.
+
+    Je veux voir le nombre d'abonnes en base dans la barre de notification. Ce
+    nombre est mis a jour a chaque creation / suppression d'abonne
+
     En tant que gestionnaire des abonnes
     Je veux extraire la listes des abonnes au format CSV
     Pour pouvoir avoir un apercu global des abonnes dans un tableur.
