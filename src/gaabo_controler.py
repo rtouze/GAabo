@@ -3,7 +3,9 @@
 
 __author__ = 'romain.touze@gmail.com'
 
+from datetime import date
 from subscriber import Subscriber
+from subscriber import Address
 from subscriber_exporter import RoutageExporter
 
 class Controler(object):
@@ -63,13 +65,134 @@ class Controler(object):
 class SubscriberAdapter(object):
     """Adatpter to change a dict with subscriber values to a Subscriber
     object"""
-    def __init__(self, subscriber_dict):
-        self.sub = subscriber_dict
+    def __init__(self, subscriber_dict=None, db_sub=None):
+        if subscriber_dict is None:
+            self.sub = {}
+        else:
+            self.sub = subscriber_dict
+
+        if db_sub is None:
+            self.db_sub = Subscriber()
+        else:
+            self.db_sub = db_sub
+
     def save_subscriber(self):
-        subscriber = Subscriber()
-        subscriber.lastname = self.sub['lastname']
-        subscriber.firstname = self.sub['firstname']
-        subscriber.email_address = self.sub['email_address']
-        subscriber.save()
-        self.sub['subscriber_id'] = subscriber.identifier
+        """Save subscriber information in db and return the subscriber dict
+        with generated new subscriber id"""
+        self._set_naming_info()
+        self._set_address_info()
+        self._set_subscription_info()
+        self._save_and_retrieve_id()
         return self.sub
+
+    def _set_naming_info(self):
+        if self._is_defined('lastname'):
+            self.db_sub.lastname = self.sub['lastname']
+        if self._is_defined('firstname'):
+            self.db_sub.firstname = self.sub['firstname']
+        if self._is_defined('email_address'):
+            self.db_sub.email_address = self.sub['email_address']
+        if self._is_defined('company'):
+            self.db_sub.company = self.sub['company']
+        if self._is_defined('name_addition'):
+            self.db_sub.name_addition = self.sub['name_addition']
+
+    def _is_defined(self, field):
+        return field in self.sub.keys()
+
+    def _set_address_info(self):
+        address = Address()
+        if self._is_defined('address'):
+            address.address1 = self.sub['address']
+        if self._is_defined('address_addition'):
+            address.address2 = self.sub['address_addition']
+        if self._is_defined('post_code'):
+            # TODO check that it's an int
+            address.post_code = int(self.sub['post_code'])
+        if self._is_defined('city'):
+            address.city = self.sub['city']
+        self.db_sub.address = address
+
+    def _set_subscription_info(self):
+        self._set_issues_info()
+        self._set_pricing_info()
+        self._set_date_info()
+        self._set_misc_info()
+
+    def _set_issues_info(self):
+        # TODO check numbers
+        if self._is_defined('subscriber_since_issue'):
+            self.db_sub.subscriber_since_issue = \
+                    self.sub['subscriber_since_issue']
+        if self._is_defined('issues_to_receive'):
+            self.db_sub.issues_to_receive = \
+                    self.sub['issues_to_receive']
+        if self._is_defined('subs_beginning_issue'):
+            self.db_sub.subs_beginning_issue = \
+                    self.sub['subs_beginning_issue']
+        if self._is_defined('hors_serie1'):
+            self.db_sub.hors_serie1 = \
+                    self.sub['hors_serie1']
+
+    def _set_pricing_info(self):
+        # TODO check floats
+        if self._is_defined('subscription_price'):
+            self.db_sub.subscription_price = \
+                    float(self.sub['subscription_price'].replace(',', '.'))
+        if self._is_defined('membership_price'):
+            self.db_sub.membership_price = \
+                    float(self.sub['membership_price'].replace(',', '.'))
+
+    def _set_date_info(self):
+        # TODO check date
+        if self._is_defined('subscription_date'):
+            day, month, year = self.sub['subscription_date'].split('/')
+            self.db_sub.subscription_date = date(
+                    int(year),
+                    int(month),
+                    int(day)
+                    )
+
+    def _set_misc_info(self):
+        if self._is_defined('ordering_type'):
+            self.db_sub.ordering_type = \
+                    self.sub['ordering_type']
+        if self._is_defined('comment'):
+            self.db_sub.comment = \
+                    self.sub['comment']
+
+    def _save_and_retrieve_id(self):
+        if self._is_defined('subscriber_id'):
+            self.db_sub.identifier = self.sub['subscriber_id']
+        self.db_sub.save()
+        self.sub['subscriber_id'] = self.db_sub.identifier
+
+    @classmethod
+    def get_subscribers_from_lastname(cls, lastname):
+        sub_list = Subscriber.get_subscribers_from_lastname(lastname)
+        sub_dict_list = []
+        for sub in sub_list:
+            adapt = SubscriberAdapter(db_sub=sub)
+            adapt.build_dict()
+            sub_dict_list.append(adapt.sub)
+        return sub_dict_list
+
+    def build_dict(self):
+        self.sub = {
+                'subscriber_id': self.db_sub.identifier,
+                'lastname': self.db_sub.lastname,
+                'firstname': self.db_sub.firstname,
+                'email_address': self.db_sub.email_address,
+                'name_addition': self.db_sub.name_addition
+                }
+        self._get_address_info()
+        return self.sub
+
+    def _get_address_info(self):
+        address = self.db_sub.address
+        self.sub['address'] = address.address1
+        self.sub['address_addition'] = address.address2
+        self.sub['post_code'] = '%05d' % address.post_code
+        self.sub['city'] = address.city
+
+        
