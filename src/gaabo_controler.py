@@ -15,6 +15,8 @@ class Controler(object):
         self.frame = frame
 
     def get_searched_customer_list(self, lastname, company, email):
+        # TODO improve : retrieve id, lastname, company then retrieve the
+        # customer when edition is demanded
         subs_list = [] 
         if lastname:
             subs_list.extend(SubscriberAdapter.get_subscribers_from_lastname(lastname))
@@ -34,9 +36,9 @@ class Controler(object):
         
         return subs_list
 
-    def delete_subscriber(self, subscriber):
+    def delete_subscriber(self):
         # TODO - modify
-        subscriber.delete()
+        SubscriberAdapter.delete_from_id(self.subscriber_values['subscriber_id'])
 
     def export_regular_issue_routage_file(self, file_path):
         exporter = RoutageExporter(file_path)
@@ -195,6 +197,11 @@ class SubscriberAdapter(object):
             adapt.build_dict()
             sub_dict_list.append(adapt.sub)
         return sub_dict_list
+
+    @classmethod
+    def delete_from_id(cls, subscriber_id):
+        #TODO - tests
+        print('DEBUG - deletion of sub #%s' % subscriber_id)
 
     def build_dict(self):
         self.sub = {

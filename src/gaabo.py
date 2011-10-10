@@ -90,75 +90,6 @@ class GaaboFrame(wx.Frame):
         self.status_bar.SetStatusText(u'Abonné modifié', 1)
         self.update_subscriber_counter()
 
-    def save_subscriber(self, input_subscriber=None):
-        if self.current_edited_subscriber is None:
-            self.current_edited_subscriber = Subscriber()
-        field_constant_list = gaabo_constants.field_names
-        for key in self.field_widget_dict.keys():
-            subscriber_field_name = field_constant_list[key][0]
-            if subscriber_field_name == 'subscription_date':
-                self.__write_date(key)
-            elif self.is_integer_field(subscriber_field_name):
-                self.__write_int(key)
-            else:
-                self.__write_field(key)
-
-        self.current_edited_subscriber.save()
-
-    def is_integer_field(self, field_name):
-        """Check if the field must contain an integer"""
-        return (
-                field_name == 'hors_serie1' 
-                or field_name == 'issues_to_receive'
-                or field_name == 'post_code'
-                )
-
-    def __write_date(self, key):
-        field_value = self.field_widget_dict[key].GetValue()
-        if field_value.strip() != '':
-            date_array = field_value.split('/')
-            self.current_edited_subscriber.subscription_date = datetime.date(
-                            int(date_array[2]),
-                            int(date_array[1]),
-                            int(date_array[0])
-                            )
-        else:
-            self.current_edited_subscriber.subscription_date = None
-
-    def __write_int(self, key):
-        field_value = self.field_widget_dict[key].GetValue()
-        field_name = gaabo_constants.field_names[key][0]
-        if field_value.isdigit():
-            int_value = int(field_value)
-        else:
-            int_value = 0
-        if field_name == 'post_code':
-            self.current_edited_subscriber.address.post_code = int_value
-        else:
-            self.current_edited_subscriber.__dict__[field_name] = int_value
-
-    def __write_field(self, key):
-        # TODO dirty, find some nice abstraction between view and model!
-        subscriber_field_name = gaabo_constants.field_names[key][0]
-        if subscriber_field_name == 'address':
-            self.current_edited_subscriber.address.address1 = \
-                    self.get_converted_field_value(key)
-        elif subscriber_field_name == 'address_addition':
-            self.current_edited_subscriber.address.address2 = \
-                    self.get_converted_field_value(key)
-        elif subscriber_field_name == 'city':
-            self.current_edited_subscriber.address.city = \
-                    self.get_converted_field_value(key)
-        else:
-            self.current_edited_subscriber.__dict__[subscriber_field_name] = \
-            self.get_converted_field_value(key)
-
-    def get_converted_field_value(self, key):
-        if self.encoding == 'UTF-8':
-            return unicode(self.field_widget_dict[key].GetValue())
-        else:
-            return unicode(self.field_widget_dict[key].GetValue(), self.encoding)
-
     def show_search_form(self, event):
         self.right_panel.Destroy()
         self.right_panel = panels.SearchPanel(self)
@@ -196,21 +127,21 @@ class GaaboFrame(wx.Frame):
         self.refresh_window()
 
     def modify_subscriber_form(self, event):
-        self.current_edited_subscriber = self.subs_dict[event.GetId()]
+        self.controler.subscriber_values = self.subs_dict[event.GetId()]
         self.get_subscriber_edition_panel()
 
     def delete_subscriber(self, event):
-        subscriber = self.subs_dict[event.GetId()]
+        self.controler.subscriber_values = self.subs_dict[event.GetId()]
         dialog = wx.MessageDialog(
                 None,
                 u'Ètes-vous sur de vouloir supprimer l\'abonné %s ?' 
-                % subscriber.lastname,
+                % self.controler.subscriber_values['lastname'],
                 u'Suppression d\'abonné',
                 style=wx.OK | wx.CANCEL | wx.ICON_EXCLAMATION
                 )
         result = dialog.ShowModal()
         if result == wx.ID_OK:
-            self.controler.delete_subscriber(subscriber)
+            self.controler.delete_subscriber()
             self.status_bar.SetStatusText(u'Abonne supprimé', 1)
             self.search_subscriber(event)
             self.update_subscriber_counter()

@@ -107,7 +107,6 @@ class EditionPanel(wx.Panel):
         grid = wx.FlexGridSizer(20, 2, 5, 5)
         self.pairs = []
         self.controler = self.frame.controler
-        #self.generate_pair_list()
 
         for field_pair in gaabo_constants.field_names:
             key = field_pair[0]
@@ -130,70 +129,6 @@ class EditionPanel(wx.Panel):
             return wx.StaticText(self, -1, u'Édition d\'un nouvel abonne\n')
         else:
             return wx.StaticText(self, -1, u'Édition de l\'abonne\n')
-
-    def generate_pair_list(self):
-        """Generate the list of field names, field values pairs)."""
-        index = 0
-        for items in gaabo_constants.field_names:
-            self.pairs.append(self.get_subscriber_edition_pairs(index))
-            index += 1
-    
-    def get_subscriber_edition_pairs(self, field_label_id):
-        """Generate a pair of field name + field value"""
-        field_constant_list = gaabo_constants.field_names
-        displayed_field_name = field_constant_list[field_label_id][1]
-        internal_field_name = field_constant_list[field_label_id][0]
-        subscriber_field_name = field_constant_list[field_label_id][0]
-        if subscriber_field_name == 'subscription_date':
-            label = wx.StaticText(
-                    self,
-                    -1,
-                    displayed_field_name + ' (jj/mm/aaaa)'
-                    )
-        else:
-            label = wx.StaticText(self, -1, displayed_field_name)
-
-        if self.subscriber is None:
-            self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
-                    self,
-                    -1,
-                    size=(200, FIELD_HEIGHT)
-                    )
-        else:
-            if subscriber_field_name == 'subscription_date':
-                subscr_date = self.subscriber.subscription_date
-                field_value = None
-                if subscr_date is not None:
-                    field_value = subscr_date.strftime('%d/%m/%Y')
-
-                self.frame.field_widget_dict[field_label_id] = \
-                        self.set_text_field(field_value)
-
-            elif subscriber_field_name == 'post_code':
-                post_code = self.subscriber.address.post_code
-                formatted_post_code = ''
-                if (unicode(post_code).isdigit() and post_code != 0):
-                    formatted_post_code = '%05d' % post_code
-                self.frame.field_widget_dict[field_label_id] = \
-                        self.set_text_field(formatted_post_code)
-            elif subscriber_field_name == 'address':
-                field_value = self.subscriber.address.address1
-                self.frame.field_widget_dict[field_label_id] = \
-                        self.set_text_field(field_value)
-            elif subscriber_field_name == 'address_addition':
-                field_value = self.subscriber.address.address2
-                self.frame.field_widget_dict[field_label_id] = \
-                        self.set_text_field(field_value)
-            elif subscriber_field_name == 'city':
-                field_value = self.subscriber.address.city
-                self.frame.field_widget_dict[field_label_id] = \
-                        self.set_text_field(field_value)
-
-            else:
-                field_value = self.subscriber.__dict__[subscriber_field_name]
-                self.frame.field_widget_dict[field_label_id] = \
-                        self.set_text_field(field_value)
-        return (label, self.frame.field_widget_dict[field_label_id])
 
     def set_text_field(self, field_value=None):
         """Returns an unicode formated TextCtrl containing field_value"""
