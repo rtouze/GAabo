@@ -5,6 +5,7 @@
 __author__ = 'romain.touze@gmail.com'
 
 import unittest
+from datetime import date
 
 from gaabo_controler import SubscriberAdapter
 import gaabo_conf
@@ -12,9 +13,7 @@ from subscriber import Subscriber
 from subscriber import Address
 import sqlite3
 
-
-class SubscriberAdapterTest(unittest.TestCase):
-
+class SubscriberAdapterAbstractTest(unittest.TestCase):
     def setUp(self):
         """Initialize the object and database"""
         gaabo_conf.db_name = 'test.db'
@@ -22,6 +21,8 @@ class SubscriberAdapterTest(unittest.TestCase):
         self.cursor = self.conn.cursor()
         self.cursor.execute('DELETE FROM subscribers')
         self.conn.commit()
+
+class SubscriberAdapterTest(SubscriberAdapterAbstractTest):
 
     def test_simple_subscriber_save_retrieve(self):
         """Test subscriber save with few fields"""
@@ -39,7 +40,6 @@ class SubscriberAdapterTest(unittest.TestCase):
         self.assertEquals(retrieved_sub.firstname, 'tata')
         self.assertEquals(retrieved_sub.email_address, 'toto@truc.com')
         self.assertEquals(retrieved_sub.identifier, actual['subscriber_id'])
-
 
     def _save(self, sub):
         """Save the subscriber"""
@@ -76,7 +76,6 @@ class SubscriberAdapterTest(unittest.TestCase):
         
         retrieved_sub = self._retrieve_one_from_lastname('toto')
         self.assertEquals(ident, retrieved_sub.identifier)
-    
 
     def test_subscriber_with_address_retrieve(self):
         """Test saving and retrieving a subscriber with address"""
@@ -148,6 +147,24 @@ class SubscriberAdapterTest(unittest.TestCase):
                 str(retrieved.hors_serie1)
                 )
 
+    def test_empty_subscription_info(self):
+        sub = {
+                'lastname': 'toto',
+                'subscriber_since_issue':'',
+                'subscription_date':'',
+                'issues_to_receive':'',
+                'subs_beginning_issue':'',
+                'hors_serie1':''
+                }
+        retrieved = self._save_and_retrieve_from_lastname(sub, 'toto')
+        self.assertEquals(0, retrieved.subscriber_since_issue)
+        self.assertEquals(
+                date.today(),
+                retrieved.subscription_date
+                )
+        
+
+
     def test_pricing_info(self):
         """Tests float info abour subscription pricing"""
         sub = {
@@ -195,6 +212,10 @@ class SubscriberAdapterTest(unittest.TestCase):
                 retrieved.subscription_date.strftime('%d/%m/%Y')
                 )
 
+
+class SubscriberRetrievalTest(SubscriberAdapterAbstractTest):
+    """Tests subscriber retrieval and translation using the adapter"""
+
     def test_get_subs_by_lastname(self):
         """Test subscriber by lastname retrieval using the adapter"""
         sub = Subscriber()
@@ -231,6 +252,68 @@ class SubscriberAdapterTest(unittest.TestCase):
         self.assertEquals('38100', new_sub['post_code'])
         self.assertEquals('Paris', new_sub['city'])
 
+    def test_subscription_info_by_lastname(self):
+        """Test subscription info fields retrieved by the adapter"""
+        sub = Subscriber()
+        sub.lastname = 'toto'
+        sub.subscription_date = date(2011, 10, 10)
+        sub.issues_to_receive = 5
+        sub.subs_beginning_issue = 32
+        sub.subscription_price = 31.50
+        sub.membership_price = 50.25
+        sub.hors_serie1 = 1
+        sub.ordering_type = 'pp'
+        sub.comment = 'blahblah'
+        sub.save()
+
+        dict_list = SubscriberAdapter.get_subscribers_from_lastname('toto')
+        new_sub = dict_list[0]
+        self.assertEquals('10/10/2011', new_sub['subscription_date'])
+        self.assertEquals('5', new_sub['issues_to_receive'])
+        self.assertEquals('32', new_sub['subs_beginning_issue'])
+        self.assertEquals('31,50', new_sub['subscription_price'])
+        self.assertEquals('50,25', new_sub['membership_price'])
+        self.assertEquals('1', new_sub['hors_serie1'])
+        self.assertEquals('pp', new_sub['ordering_type'])
+        self.assertEquals('blahblah', new_sub['comment'])
+
+    def test_get_subs_by_company(self):
+        """Test subscriber by company retrieval using the adapter"""
+        sub = Subscriber()
+        sub.lastname = 'toto'
+        sub.firstname = 'tata'
+        sub.company = 'Machin.corp'
+        sub.email_address = 'toto@machin.com'
+        sub.name_addition = 'foobar'
+        sub.save()
+        
+        dict_list = SubscriberAdapter.get_subscribers_from_company('Machin.corp')
+        new_sub = dict_list[0]
+        self.assertEquals('toto', new_sub['lastname'])
+        self.assertEquals('tata', new_sub['firstname'])
+        self.assertEquals('toto@machin.com', new_sub['email_address'])
+        self.assertEquals('foobar', new_sub['name_addition'])
+        self.assertEquals('Machin.corp', new_sub['company'])
+        self.assertEquals(sub.identifier, new_sub['subscriber_id'])
+
+    def test_get_subs_by_email(self):
+        """Test subscriber by email retrieval using the adapter"""
+        sub = Subscriber()
+        sub.lastname = 'toto'
+        sub.firstname = 'tata'
+        sub.company = 'Machin.corp'
+        sub.email_address = 'toto@machin.com'
+        sub.name_addition = 'foobar'
+        sub.save()
+        
+        dict_list = SubscriberAdapter.get_subscribers_from_email('toto@machin.com')
+        new_sub = dict_list[0]
+        self.assertEquals('toto', new_sub['lastname'])
+        self.assertEquals('tata', new_sub['firstname'])
+        self.assertEquals('toto@machin.com', new_sub['email_address'])
+        self.assertEquals('foobar', new_sub['name_addition'])
+        self.assertEquals('Machin.corp', new_sub['company'])
+        self.assertEquals(sub.identifier, new_sub['subscriber_id'])
 
 if __name__ == '__main__':
     unittest.main()

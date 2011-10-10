@@ -21,7 +21,7 @@ class GaaboFrame(wx.Frame):
         #TODO Too many fields in this class
         wx.Frame.__init__(self, parent, title=title, size=(1024, 800))
         self.encoding = sys.getfilesystemencoding()
-        self.controler = Controler()
+        self.controler = Controler(self)
         # List of the fields used to edit a subscriber
         self.field_widget_dict = {} 
         self.searched_list = []
@@ -77,10 +77,9 @@ class GaaboFrame(wx.Frame):
         self.right_panel = panels.EditionPanel(self)
         self.refresh_window()
 
-    def save_subscriber_action(self, event):
+    def show_save_confirmation(self):
         # TODO Mettre une alerte : on ne peut pas creer un abonne avec le nom ou
         # l'adresse vide !
-        self.save_subscriber()
         dialog = wx.MessageDialog(
                 None,
                 u'L\'abonné a été sauvegardé',

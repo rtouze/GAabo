@@ -9,31 +9,33 @@ from subscriber import Address
 from subscriber_exporter import RoutageExporter
 
 class Controler(object):
-    def __init__(self):
+    def __init__(self, frame):
         self.subscriber_values = {}
         self.field_widget_dict = {}
+        self.frame = frame
 
     def get_searched_customer_list(self, lastname, company, email):
         subs_list = [] 
         if lastname:
-            subs_list.extend(Subscriber.get_subscribers_from_lastname(lastname))
+            subs_list.extend(SubscriberAdapter.get_subscribers_from_lastname(lastname))
         if company:
-            subs_list.extend(Subscriber.get_subscribers_from_company(company))
+            subs_list.extend(SubscriberAdapter.get_subscribers_from_company(company))
         if email:
-            subs_list.extend(Subscriber.get_subscribers_from_email(email))
+            subs_list.extend(SubscriberAdapter.get_subscribers_from_email(email))
 
         identifiers = []
         index = 0
         for subscriber in subs_list:
-            if subscriber.identifier in identifiers:
+            if subscriber['subscriber_id'] in identifiers:
                 subs_list.pop(index)
             else:
-                identifiers.append(subscriber.identifier)
+                identifiers.append(subscriber['subscriber_id'])
             index += 1
         
         return subs_list
 
     def delete_subscriber(self, subscriber):
+        # TODO - modify
         subscriber.delete()
 
     def export_regular_issue_routage_file(self, file_path):
@@ -53,7 +55,6 @@ class Controler(object):
     def get_subscription_count(self):
         return Subscriber.get_count()
 
-
     def save_subscriber_action(self, event):
         """Called by the edition panel to save the subscriber in database"""
         sub = {}
@@ -61,6 +62,7 @@ class Controler(object):
             sub[key] = self.field_widget_dict[key].GetValue()
         adapter = SubscriberAdapter(sub)
         self.subscriber_values = adapter.save_subscriber()
+        self.frame.show_save_confirmation()
 
 class SubscriberAdapter(object):
     """Adatpter to change a dict with subscriber values to a Subscriber
@@ -83,6 +85,7 @@ class SubscriberAdapter(object):
         self._set_address_info()
         self._set_subscription_info()
         self._save_and_retrieve_id()
+        print 'DEBUG - saved ' + str(self.sub)
         return self.sub
 
     def _set_naming_info(self):
@@ -98,7 +101,9 @@ class SubscriberAdapter(object):
             self.db_sub.name_addition = self.sub['name_addition']
 
     def _is_defined(self, field):
-        return field in self.sub.keys()
+        return \
+                field in self.sub.keys() \
+                and unicode(self.sub[field]).strip() != ''
 
     def _set_address_info(self):
         address = Address()
@@ -170,6 +175,20 @@ class SubscriberAdapter(object):
     @classmethod
     def get_subscribers_from_lastname(cls, lastname):
         sub_list = Subscriber.get_subscribers_from_lastname(lastname)
+        return SubscriberAdapter._build_dict_list(sub_list)
+
+    @classmethod
+    def get_subscribers_from_company(cls, company):
+        sub_list = Subscriber.get_subscribers_from_company(company)
+        return SubscriberAdapter._build_dict_list(sub_list)
+
+    @classmethod
+    def get_subscribers_from_email(cls, email):
+        sub_list = Subscriber.get_subscribers_from_email(email)
+        return SubscriberAdapter._build_dict_list(sub_list)
+
+    @classmethod
+    def _build_dict_list(cls, sub_list):
         sub_dict_list = []
         for sub in sub_list:
             adapt = SubscriberAdapter(db_sub=sub)
@@ -183,9 +202,25 @@ class SubscriberAdapter(object):
                 'lastname': self.db_sub.lastname,
                 'firstname': self.db_sub.firstname,
                 'email_address': self.db_sub.email_address,
-                'name_addition': self.db_sub.name_addition
+                'name_addition': self.db_sub.name_addition,
+                'company': self.db_sub.company
                 }
         self._get_address_info()
+        self.sub['subscription_date'] = self.db_sub \
+                .subscription_date \
+                .strftime('%d/%m/%Y')
+        self.sub['issues_to_receive'] = str(self.db_sub.issues_to_receive)
+        self.sub['subs_beginning_issue'] = str(self.db_sub.subs_beginning_issue)
+        self.sub['subscription_price'] = \
+                ('%.2f' % self.db_sub.subscription_price) \
+                .replace('.', ',') 
+        self.sub['membership_price'] = \
+                ('%.2f' % self.db_sub.membership_price) \
+                .replace('.', ',') 
+        self.sub['hors_serie1'] = str(self.db_sub.hors_serie1)
+        self.sub['ordering_type'] = self.db_sub.ordering_type
+        self.sub['comment'] = self.db_sub.comment
+        
         return self.sub
 
     def _get_address_info(self):
