@@ -35,7 +35,7 @@ class SubscriberAdapterTest(SubscriberAdapterAbstractTest):
         actual = self._save(sub)
         self.assertEquals('toto', actual['lastname'])
         self.assertTrue('subscriber_id' in actual.keys())
-        
+
         retrieved_sub = self._retrieve_one_from_lastname('toto')
         self.assertEquals(retrieved_sub.firstname, 'tata')
         self.assertEquals(retrieved_sub.email_address, 'toto@truc.com')
@@ -73,7 +73,7 @@ class SubscriberAdapterTest(SubscriberAdapterAbstractTest):
                 }
         actual = self._save(sub)
         self.assertEquals(ident, actual['subscriber_id'])
-        
+
         retrieved_sub = self._retrieve_one_from_lastname('toto')
         self.assertEquals(ident, retrieved_sub.identifier)
 
@@ -100,10 +100,21 @@ class SubscriberAdapterTest(SubscriberAdapterAbstractTest):
         self.assertEquals(sub['post_code'], str(retrieved_address.post_code))
         self.assertEquals(sub['city'], retrieved_address.city)
 
+
     def _save_and_retrieve_from_lastname(self, sub, lastname):
         """Call _save, then _retrieve_one_from_lastname with provided info"""
         self._save(sub)
         return self._retrieve_one_from_lastname(lastname)
+
+    def test_wrong_postode(self):
+        """Tests what happens when a non int postcode is set to subscriber"""
+        sub = {
+                'lastname': 'toto',
+                'post_code': 'foobar'
+                }
+        retrieved_sub = self._save_and_retrieve_from_lastname(sub, 'toto')
+        retrieved_postcode = retrieved_sub.address.post_code
+        self.assertEquals(0, retrieved_postcode)
 
     def test_subscriber_without_identification(self):
         """Test a subscriber without lastname, firstname nor email"""
@@ -150,11 +161,11 @@ class SubscriberAdapterTest(SubscriberAdapterAbstractTest):
     def test_empty_subscription_info(self):
         sub = {
                 'lastname': 'toto',
-                'subscriber_since_issue':'',
-                'subscription_date':'',
-                'issues_to_receive':'',
-                'subs_beginning_issue':'',
-                'hors_serie1':''
+                'subscriber_since_issue': '',
+                'subscription_date': '',
+                'issues_to_receive': '',
+                'subs_beginning_issue': '',
+                'hors_serie1': ''
                 }
         retrieved = self._save_and_retrieve_from_lastname(sub, 'toto')
         self.assertEquals(0, retrieved.subscriber_since_issue)
@@ -162,8 +173,31 @@ class SubscriberAdapterTest(SubscriberAdapterAbstractTest):
                 date.today(),
                 retrieved.subscription_date
                 )
-        
 
+    def test_subscription_with_wrong_integers(self):
+        """Tests what happens if we send string other than numbers
+        in subscriber info"""
+        sub = {
+                'lastname': 'toto',
+                'subscriber_since_issue': 'pouf',
+                'issues_to_receive': 'foo',
+                'subs_beginning_issue': 'bar',
+                'hors_serie1': 'thing'
+                }
+
+        retrieved = self._save_and_retrieve_from_lastname(sub, 'toto')
+        self.assertEquals(0, retrieved.subscriber_since_issue)
+        self.assertEquals(0, retrieved.issues_to_receive)
+        self.assertEquals(0, retrieved.subs_beginning_issue)
+        self.assertEquals(0, retrieved.hors_serie1)
+
+    def test_subscriber_with_wrong_date(self):
+        sub = {
+                'lastname': 'toto',
+                'subscription_date': 'foobar'
+                }
+        retrieved = self._save_and_retrieve_from_lastname(sub, 'toto')
+        self.assertEquals(date.today(), retrieved.subscription_date)
 
     def test_pricing_info(self):
         """Tests float info abour subscription pricing"""
@@ -181,6 +215,17 @@ class SubscriberAdapterTest(SubscriberAdapterAbstractTest):
                 sub['membership_price'],
                 str(retrieved.membership_price).replace('.', ',')
                 )
+
+    def test_pricing_info_with_wrong_floats(self):
+        """Tests what happens if we send wrong floats in subscriber info"""
+        sub = {
+                'lastname': 'toto',
+                'subscription_price': 'foo',
+                'membership_price': 'bar'
+                }
+        retrieved = self._save_and_retrieve_from_lastname(sub, 'toto')
+        self.assertEqual(retrieved.subscription_price, 0)
+
 
     def test_other_misc_info(self):
         """Tests comment and ordering type fields"""
@@ -212,7 +257,6 @@ class SubscriberAdapterTest(SubscriberAdapterAbstractTest):
                 retrieved.subscription_date.strftime('%d/%m/%Y')
                 )
 
-
 class SubscriberRetrievalTest(SubscriberAdapterAbstractTest):
     """Tests subscriber retrieval and translation using the adapter"""
 
@@ -224,7 +268,7 @@ class SubscriberRetrievalTest(SubscriberAdapterAbstractTest):
         sub.email_address = 'toto@machin.com'
         sub.name_addition = 'foobar'
         sub.save()
-        
+
         dict_list = SubscriberAdapter.get_subscribers_from_lastname('toto')
         new_sub = dict_list[0]
         self.assertEquals('toto', new_sub['lastname'])
@@ -277,6 +321,33 @@ class SubscriberRetrievalTest(SubscriberAdapterAbstractTest):
         self.assertEquals('pp', new_sub['ordering_type'])
         self.assertEquals('blahblah', new_sub['comment'])
 
+    def test_subscriber_with_wrong_pricing_info(self):
+        """Tests what happens when Subscriber has wrong or empty pricing
+        info"""
+        sub = Subscriber()
+        sub.lastname = 'toto'
+        sub.subscription_price = 'foo'
+        sub.membership_price = 'bar'
+        sub.save()
+        dict_list = SubscriberAdapter.get_subscribers_from_lastname('toto')
+        new_sub = dict_list[0]
+        self.assertEquals('0,00', new_sub['subscription_price'])
+        self.assertEquals('0,00', new_sub['membership_price'])
+
+    def test_null_post_code_format(self):
+        """Test the postcode format when a null postcode is in db: 00000 is
+        ugly"""
+        sub = Subscriber()
+        sub.lastname = 'toto'
+        address = Address()
+        address.post_code = 0
+        sub.address = address
+        sub.save()
+        dict_list = SubscriberAdapter.get_subscribers_from_lastname('toto')
+        new_sub = dict_list[0]
+        self.assertEquals('', new_sub['post_code'])
+
+
     def test_get_subs_by_company(self):
         """Test subscriber by company retrieval using the adapter"""
         sub = Subscriber()
@@ -286,7 +357,7 @@ class SubscriberRetrievalTest(SubscriberAdapterAbstractTest):
         sub.email_address = 'toto@machin.com'
         sub.name_addition = 'foobar'
         sub.save()
-        
+
         dict_list = SubscriberAdapter.get_subscribers_from_company('Machin.corp')
         new_sub = dict_list[0]
         self.assertEquals('toto', new_sub['lastname'])
@@ -305,7 +376,7 @@ class SubscriberRetrievalTest(SubscriberAdapterAbstractTest):
         sub.email_address = 'toto@machin.com'
         sub.name_addition = 'foobar'
         sub.save()
-        
+
         dict_list = SubscriberAdapter.get_subscribers_from_email('toto@machin.com')
         new_sub = dict_list[0]
         self.assertEquals('toto', new_sub['lastname'])
@@ -314,6 +385,22 @@ class SubscriberRetrievalTest(SubscriberAdapterAbstractTest):
         self.assertEquals('foobar', new_sub['name_addition'])
         self.assertEquals('Machin.corp', new_sub['company'])
         self.assertEquals(sub.identifier, new_sub['subscriber_id'])
+
+class SubscriberDeletionTest(SubscriberAdapterAbstractTest):
+    """Test class to check if created subscriber can be deleted with the adapter"""
+    def test_create_and_delete_subscriber(self):
+        sub = Subscriber()
+        sub.lastname = 'toto'
+        sub.save()
+        ident = sub.identifier
+
+        SubscriberAdapter.delete_from_id(ident)
+
+        actual_result_count = len(
+                Subscriber.get_subscribers_from_lastname('toto')
+                )
+
+        self.assertEqual(0, actual_result_count)
 
 if __name__ == '__main__':
     unittest.main()

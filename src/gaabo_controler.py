@@ -19,11 +19,17 @@ class Controler(object):
         # customer when edition is demanded
         subs_list = [] 
         if lastname:
-            subs_list.extend(SubscriberAdapter.get_subscribers_from_lastname(lastname))
+            subs_list.extend(
+                    SubscriberAdapter.get_subscribers_from_lastname(lastname)
+                    )
         if company:
-            subs_list.extend(SubscriberAdapter.get_subscribers_from_company(company))
+            subs_list.extend(
+                    SubscriberAdapter.get_subscribers_from_company(company)
+                    )
         if email:
-            subs_list.extend(SubscriberAdapter.get_subscribers_from_email(email))
+            subs_list.extend(
+                    SubscriberAdapter.get_subscribers_from_email(email)
+                    )
 
         identifiers = []
         index = 0
@@ -37,8 +43,9 @@ class Controler(object):
         return subs_list
 
     def delete_subscriber(self):
-        # TODO - modify
-        SubscriberAdapter.delete_from_id(self.subscriber_values['subscriber_id'])
+        SubscriberAdapter.delete_from_id(
+                self.subscriber_values['subscriber_id']
+                )
 
     def export_regular_issue_routage_file(self, file_path):
         exporter = RoutageExporter(file_path)
@@ -70,6 +77,8 @@ class SubscriberAdapter(object):
     """Adatpter to change a dict with subscriber values to a Subscriber
     object"""
     def __init__(self, subscriber_dict=None, db_sub=None):
+        """Depending on parameter provided, the adapter initialize a dictionary
+        or a Subscriber object"""
         if subscriber_dict is None:
             self.sub = {}
         else:
@@ -87,10 +96,10 @@ class SubscriberAdapter(object):
         self._set_address_info()
         self._set_subscription_info()
         self._save_and_retrieve_id()
-        print 'DEBUG - saved ' + str(self.sub)
         return self.sub
 
     def _set_naming_info(self):
+        """Sets the information on name, email, etc."""
         if self._is_defined('lastname'):
             self.db_sub.lastname = self.sub['lastname']
         if self._is_defined('firstname'):
@@ -103,64 +112,94 @@ class SubscriberAdapter(object):
             self.db_sub.name_addition = self.sub['name_addition']
 
     def _is_defined(self, field):
+        """Return True if the field is defined in the dict and if it is not
+        empty"""
         return \
                 field in self.sub.keys() \
                 and unicode(self.sub[field]).strip() != ''
 
     def _set_address_info(self):
+        """Sets address information for the customer"""
         address = Address()
         if self._is_defined('address'):
             address.address1 = self.sub['address']
         if self._is_defined('address_addition'):
             address.address2 = self.sub['address_addition']
-        if self._is_defined('post_code'):
-            # TODO check that it's an int
+        if self._is_defined_and_int('post_code'):
             address.post_code = int(self.sub['post_code'])
         if self._is_defined('city'):
             address.city = self.sub['city']
         self.db_sub.address = address
 
+    def _is_defined_and_int(self, field):
+        """Check if the field is defined and if it is an int. My point is to
+        avoid the use of an exception"""
+        if self._is_defined(field):
+            return unicode(self.sub[field]).strip().isdigit()
+        else: return False
+
     def _set_subscription_info(self):
+        """Sets the information about the subscription"""
         self._set_issues_info()
         self._set_pricing_info()
         self._set_date_info()
         self._set_misc_info()
 
     def _set_issues_info(self):
-        # TODO check numbers
-        if self._is_defined('subscriber_since_issue'):
+        """Sets the information about the issues to receive"""
+        if self._is_defined_and_int('subscriber_since_issue'):
             self.db_sub.subscriber_since_issue = \
                     self.sub['subscriber_since_issue']
-        if self._is_defined('issues_to_receive'):
+        if self._is_defined_and_int('issues_to_receive'):
             self.db_sub.issues_to_receive = \
                     self.sub['issues_to_receive']
-        if self._is_defined('subs_beginning_issue'):
+        if self._is_defined_and_int('subs_beginning_issue'):
             self.db_sub.subs_beginning_issue = \
                     self.sub['subs_beginning_issue']
-        if self._is_defined('hors_serie1'):
+        if self._is_defined_and_int('hors_serie1'):
             self.db_sub.hors_serie1 = \
                     self.sub['hors_serie1']
 
     def _set_pricing_info(self):
-        # TODO check floats
-        if self._is_defined('subscription_price'):
-            self.db_sub.subscription_price = \
-                    float(self.sub['subscription_price'].replace(',', '.'))
-        if self._is_defined('membership_price'):
-            self.db_sub.membership_price = \
-                    float(self.sub['membership_price'].replace(',', '.'))
+        """Sets the information about subscription and membership pricing"""
+        new_sub_price = \
+            self._convert_field_to_float_str('subscription_price')
+        new_membership_price = \
+            self._convert_field_to_float_str('membership_price')
+        
+        try:
+            self.db_sub.subscription_price = float(new_sub_price)
+        except ValueError:
+            self.db_sub.subscription_price = 0.0
+            
+        try:
+            self.db_sub.membership_price = float(new_membership_price)
+        except ValueError:
+            self.db_sub.membership_price = 0.0
+
+    def _convert_field_to_float_str(self, field_key):
+        """Converts a french typed float string to a python float"""
+        if self._is_defined(field_key):
+            return self.sub[field_key].replace(',', '.')
+        else:
+            return '0'
 
     def _set_date_info(self):
-        # TODO check date
+        """Converts a French format date field (dd/mm/YYYY) to a python date"""
         if self._is_defined('subscription_date'):
-            day, month, year = self.sub['subscription_date'].split('/')
-            self.db_sub.subscription_date = date(
-                    int(year),
-                    int(month),
-                    int(day)
-                    )
+            try:
+                day, month, year = self.sub['subscription_date'].split('/')
+                self.db_sub.subscription_date = date(
+                        int(year),
+                        int(month),
+                        int(day)
+                        )
+            except ValueError:
+                # We keep the default value, which is current date
+                pass
 
     def _set_misc_info(self):
+        """Sets the rest of the information for the subscriber"""
         if self._is_defined('ordering_type'):
             self.db_sub.ordering_type = \
                     self.sub['ordering_type']
@@ -169,6 +208,7 @@ class SubscriberAdapter(object):
                     self.sub['comment']
 
     def _save_and_retrieve_id(self):
+        """Save the subscriber in DB"""
         if self._is_defined('subscriber_id'):
             self.db_sub.identifier = self.sub['subscriber_id']
         self.db_sub.save()
@@ -176,16 +216,19 @@ class SubscriberAdapter(object):
 
     @classmethod
     def get_subscribers_from_lastname(cls, lastname):
+        """Retrived a subscriber dict from the lastname"""
         sub_list = Subscriber.get_subscribers_from_lastname(lastname)
         return SubscriberAdapter._build_dict_list(sub_list)
 
     @classmethod
     def get_subscribers_from_company(cls, company):
+        """Retrived a subscriber dict from the company"""
         sub_list = Subscriber.get_subscribers_from_company(company)
         return SubscriberAdapter._build_dict_list(sub_list)
 
     @classmethod
     def get_subscribers_from_email(cls, email):
+        """Retrived a subscriber dict from the email"""
         sub_list = Subscriber.get_subscribers_from_email(email)
         return SubscriberAdapter._build_dict_list(sub_list)
 
@@ -200,10 +243,11 @@ class SubscriberAdapter(object):
 
     @classmethod
     def delete_from_id(cls, subscriber_id):
-        #TODO - tests
-        print('DEBUG - deletion of sub #%s' % subscriber_id)
+        """Delete a sbscriber from the db using provided id"""
+        Subscriber.delete_from_id(subscriber_id)
 
     def build_dict(self):
+        """Create the subscriber dictionary from the ASubscriber object"""
         self.sub = {
                 'subscriber_id': self.db_sub.identifier,
                 'lastname': self.db_sub.lastname,
@@ -218,12 +262,21 @@ class SubscriberAdapter(object):
                 .strftime('%d/%m/%Y')
         self.sub['issues_to_receive'] = str(self.db_sub.issues_to_receive)
         self.sub['subs_beginning_issue'] = str(self.db_sub.subs_beginning_issue)
-        self.sub['subscription_price'] = \
-                ('%.2f' % self.db_sub.subscription_price) \
-                .replace('.', ',') 
-        self.sub['membership_price'] = \
-                ('%.2f' % self.db_sub.membership_price) \
-                .replace('.', ',') 
+
+        try:
+            self.sub['subscription_price'] = \
+                    ('%.2f' % self.db_sub.subscription_price) \
+                    .replace('.', ',') 
+        except TypeError:
+            self.sub['subscription_price'] = '0,00'
+
+        try:
+            self.sub['membership_price'] = \
+                    ('%.2f' % self.db_sub.membership_price) \
+                    .replace('.', ',') 
+        except TypeError:
+            self.sub['membership_price'] = '0,00'
+
         self.sub['hors_serie1'] = str(self.db_sub.hors_serie1)
         self.sub['ordering_type'] = self.db_sub.ordering_type
         self.sub['comment'] = self.db_sub.comment
@@ -231,10 +284,12 @@ class SubscriberAdapter(object):
         return self.sub
 
     def _get_address_info(self):
+        """Retrieve the address information from the Subscriber"""
         address = self.db_sub.address
         self.sub['address'] = address.address1
         self.sub['address_addition'] = address.address2
-        self.sub['post_code'] = '%05d' % address.post_code
+        if address.post_code != 0:
+            self.sub['post_code'] = '%05d' % address.post_code
+        else:
+            self.sub['post_code'] = ''
         self.sub['city'] = address.city
-
-        

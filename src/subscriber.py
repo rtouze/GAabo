@@ -23,7 +23,7 @@ class Subscriber(object):
         self.email_address = ''
         self.subscriber_since_issue = 0
         self.subscription_date = datetime.date.today()
-        self.issues_to_receive = self.ISSUES_IN_A_YEAR
+        self.issues_to_receive = 0
         self.subs_beginning_issue = 0
         self.member = 0
         self.subscription_price = 0.0
@@ -76,6 +76,12 @@ class Subscriber(object):
     def get_count(cls):
         adhoc_dao = SubscriberDAO()
         return adhoc_dao.get_count()
+
+    @classmethod
+    def delete_from_id(cls, identifier):
+        """Delete a sbscriber from the db using provided id"""
+        adhoc_dao = SubscriberDAO()
+        adhoc_dao.delete(identifier)
 
     def save(self):
         if self.identifier == -1:

@@ -30,8 +30,7 @@ class TestSubscriber(unittest.TestCase):
     def test_subscriber_last_name(self):
         '''Test if the subscriber is created with default values'''
         self.assertEqual(self.sub.lastname, '')
-        self.assertEqual(self.sub.issues_to_receive, 6)
-
+        
     def test_new_subscribtion(self):
         '''Test if the order_new_subscription method add 6 issues left'''
         former_issues_left = 3
@@ -129,9 +128,11 @@ class TestSubscriber(unittest.TestCase):
 
     def test_decrement_issues_to_receive(self):
         self.sub.lastname = 'toto'
+        self.sub.issues_to_receive = 6
         self.sub.save()
         self.sub = Subscriber()
         self.sub.lastname = 'tata'
+        self.sub.issues_to_receive = 5
         self.sub.save()
         self.sub = Subscriber()
         self.sub.lastname = 'titi'
@@ -139,9 +140,9 @@ class TestSubscriber(unittest.TestCase):
         self.sub.save()
         Subscriber.decrement_issues_to_receive()
         sub = Subscriber.get_subscribers_from_lastname('toto')[0]
-        self.assertEqual(sub.issues_to_receive, sub.ISSUES_IN_A_YEAR - 1)
+        self.assertEqual(sub.issues_to_receive, 5)
         sub = Subscriber.get_subscribers_from_lastname('tata')[0]
-        self.assertEqual(sub.issues_to_receive, sub.ISSUES_IN_A_YEAR - 1)
+        self.assertEqual(sub.issues_to_receive, 4)
         sub = Subscriber.get_subscribers_from_lastname('titi')[0]
         self.assertEqual(sub.issues_to_receive, 0)
 
