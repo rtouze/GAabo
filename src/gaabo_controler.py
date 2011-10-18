@@ -10,13 +10,19 @@ from subscriber_exporter import RoutageExporter
 
 class Controler(object):
     def __init__(self, frame):
+        """Initialization of the controler. Uses the frame as parameter to send
+        it info"""
         self.subscriber_values = {}
         self.field_widget_dict = {}
         self.frame = frame
 
     def get_searched_customer_list(self, lastname, company, email):
+        """Retrieves a subscriber dictionary using its lastname, company or
+        email"""
         # TODO improve : retrieve id, lastname, company then retrieve the
         # customer when edition is demanded
+        # TODO : rename fonction to get_searched_subscriber_list
+        # TODO: split it!
         subs_list = [] 
         if lastname:
             subs_list.extend(
@@ -43,25 +49,36 @@ class Controler(object):
         return subs_list
 
     def delete_subscriber(self):
+        """Delete current subscriber"""
         SubscriberAdapter.delete_from_id(
                 self.subscriber_values['subscriber_id']
                 )
 
     def export_regular_issue_routage_file(self, file_path):
+        """Create the file to send to routing service"""
+        # TODO rename the method (use routing)
+        # TODO set it as function for pylint :)
         exporter = RoutageExporter(file_path)
         exporter.do_export()
 
     def decrement_normal_issues_to_receive(self):
+        """Decrement issues to receive when exported file is validated"""
         Subscriber.decrement_issues_to_receive()
 
     def decrement_special_issues_to_receive(self):
+        """Decrement special issues to receive when exported file is
+        validated"""
         Subscriber.decrement_special_issues_to_receive()
 
     def export_special_issue_routage_file(self, file_path):
+        """Create the file to send to routing service for special issues"""
+        # TODO rename the method (use routing)
+        # TODO set it as function for pylint :)
         exporter = RoutageExporter(file_path)
         exporter.do_export_special_issue()
 
     def get_subscription_count(self):
+        """Get the subscriber counter to displays it on notification area"""
         return Subscriber.get_count()
 
     def save_subscriber_action(self, event):
@@ -248,6 +265,7 @@ class SubscriberAdapter(object):
 
     def build_dict(self):
         """Create the subscriber dictionary from the ASubscriber object"""
+        # TODO break it down!
         self.sub = {
                 'subscriber_id': self.db_sub.identifier,
                 'lastname': self.db_sub.lastname,
