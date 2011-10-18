@@ -8,7 +8,70 @@ from subscriber import Subscriber
 from subscriber import Address
 from subscriber_exporter import RoutageExporter
 
+def get_searched_subscriber_list(lastname, company, email):
+    """Retrieves a subscriber dictionary using its lastname, company or
+    email"""
+    # TODO improve : retrieve id, lastname, company then retrieve the
+    # customer when edition is demanded
+    subs_list = populate_subs_list(lastname, company, email)
+    return refine_subs_list(subs_list)
+
+def populate_subs_list(lastname, company, email):
+    """Get a list of subscribers matching given criteria"""
+    subs_list = []
+    if lastname:
+        subs_list.extend(
+                SubscriberAdapter.get_subscribers_from_lastname(lastname)
+                )
+    if company:
+        subs_list.extend(
+                SubscriberAdapter.get_subscribers_from_company(company)
+                )
+    if email:
+        subs_list.extend(
+                SubscriberAdapter.get_subscribers_from_email(email)
+                )
+    return subs_list
+
+def refine_subs_list(subs_list):
+    """Remove deplicates from subs_list"""
+    identifiers = []
+    index = 0
+    for subscriber in subs_list:
+        if subscriber['subscriber_id'] in identifiers:
+            subs_list.pop(index)
+        else:
+            identifiers.append(subscriber['subscriber_id'])
+        index += 1
+    
+    return subs_list
+
+def export_regular_issue_routing_file(file_path):
+    """Create the file to send to routing service"""
+    exporter = RoutageExporter(file_path)
+    exporter.do_export()
+
+def decrement_normal_issues_to_receive():
+    """Decrement issues to receive when exported file is validated"""
+    Subscriber.decrement_issues_to_receive()
+
+def decrement_special_issues_to_receive():
+    """Decrement special issues to receive when exported file is
+    validated"""
+    Subscriber.decrement_special_issues_to_receive()
+
+def export_special_issue_routing_file(file_path):
+    """Create the file to send to routing service for special issues"""
+    exporter = RoutageExporter(file_path)
+    exporter.do_export_special_issue()
+
+def get_subscription_count():
+    """Get the subscriber counter to displays it on notification area"""
+    return Subscriber.get_count()
+
 class Controler(object):
+    """Controler called from the view to make the link with model classes"""
+
     def __init__(self, frame):
         """Initialization of the controler. Uses the frame as parameter to send
         it info"""
@@ -16,70 +79,12 @@ class Controler(object):
         self.field_widget_dict = {}
         self.frame = frame
 
-    def get_searched_customer_list(self, lastname, company, email):
-        """Retrieves a subscriber dictionary using its lastname, company or
-        email"""
-        # TODO improve : retrieve id, lastname, company then retrieve the
-        # customer when edition is demanded
-        # TODO : rename fonction to get_searched_subscriber_list
-        # TODO: split it!
-        subs_list = [] 
-        if lastname:
-            subs_list.extend(
-                    SubscriberAdapter.get_subscribers_from_lastname(lastname)
-                    )
-        if company:
-            subs_list.extend(
-                    SubscriberAdapter.get_subscribers_from_company(company)
-                    )
-        if email:
-            subs_list.extend(
-                    SubscriberAdapter.get_subscribers_from_email(email)
-                    )
-
-        identifiers = []
-        index = 0
-        for subscriber in subs_list:
-            if subscriber['subscriber_id'] in identifiers:
-                subs_list.pop(index)
-            else:
-                identifiers.append(subscriber['subscriber_id'])
-            index += 1
-        
-        return subs_list
-
     def delete_subscriber(self):
         """Delete current subscriber"""
         SubscriberAdapter.delete_from_id(
                 self.subscriber_values['subscriber_id']
                 )
 
-    def export_regular_issue_routage_file(self, file_path):
-        """Create the file to send to routing service"""
-        # TODO rename the method (use routing)
-        # TODO set it as function for pylint :)
-        exporter = RoutageExporter(file_path)
-        exporter.do_export()
-
-    def decrement_normal_issues_to_receive(self):
-        """Decrement issues to receive when exported file is validated"""
-        Subscriber.decrement_issues_to_receive()
-
-    def decrement_special_issues_to_receive(self):
-        """Decrement special issues to receive when exported file is
-        validated"""
-        Subscriber.decrement_special_issues_to_receive()
-
-    def export_special_issue_routage_file(self, file_path):
-        """Create the file to send to routing service for special issues"""
-        # TODO rename the method (use routing)
-        # TODO set it as function for pylint :)
-        exporter = RoutageExporter(file_path)
-        exporter.do_export_special_issue()
-
-    def get_subscription_count(self):
-        """Get the subscriber counter to displays it on notification area"""
-        return Subscriber.get_count()
 
     def save_subscriber_action(self, event):
         """Called by the edition panel to save the subscriber in database"""
@@ -251,6 +256,7 @@ class SubscriberAdapter(object):
 
     @classmethod
     def _build_dict_list(cls, sub_list):
+        """Build the dictionary list from retrieved subscribers"""
         sub_dict_list = []
         for sub in sub_list:
             adapt = SubscriberAdapter(db_sub=sub)
@@ -265,7 +271,15 @@ class SubscriberAdapter(object):
 
     def build_dict(self):
         """Create the subscriber dictionary from the ASubscriber object"""
-        # TODO break it down!
+        self._get_naming_info()
+        self._get_address_info()
+        self._get_subscription_info()
+        self._get_misc_info()
+        
+        return self.sub
+
+    def _get_naming_info(self):
+        """Generates naming info in the dict from the db"""
         self.sub = {
                 'subscriber_id': self.db_sub.identifier,
                 'lastname': self.db_sub.lastname,
@@ -274,13 +288,33 @@ class SubscriberAdapter(object):
                 'name_addition': self.db_sub.name_addition,
                 'company': self.db_sub.company
                 }
-        self._get_address_info()
+
+    def _get_address_info(self):
+        """Retrieves the address information from the Subscriber"""
+        address = self.db_sub.address
+        self.sub['address'] = address.address1
+        self.sub['address_addition'] = address.address2
+        if address.post_code != 0:
+            self.sub['post_code'] = '%05d' % address.post_code
+        else:
+            self.sub['post_code'] = ''
+        self.sub['city'] = address.city
+
+    def _get_subscription_info(self):
+        """Retrives and converts the subscription info from the db"""
         self.sub['subscription_date'] = self.db_sub \
                 .subscription_date \
                 .strftime('%d/%m/%Y')
         self.sub['issues_to_receive'] = str(self.db_sub.issues_to_receive)
         self.sub['subs_beginning_issue'] = str(self.db_sub.subs_beginning_issue)
 
+        self._get_pricing_info()
+
+
+        self.sub['hors_serie1'] = str(self.db_sub.hors_serie1)
+
+    def _get_pricing_info(self):
+        """Retrives and convert pricing information from the db"""
         try:
             self.sub['subscription_price'] = \
                     ('%.2f' % self.db_sub.subscription_price) \
@@ -295,19 +329,7 @@ class SubscriberAdapter(object):
         except TypeError:
             self.sub['membership_price'] = '0,00'
 
-        self.sub['hors_serie1'] = str(self.db_sub.hors_serie1)
+    def _get_misc_info(self):
+        """Retrives other information from db"""
         self.sub['ordering_type'] = self.db_sub.ordering_type
         self.sub['comment'] = self.db_sub.comment
-        
-        return self.sub
-
-    def _get_address_info(self):
-        """Retrieve the address information from the Subscriber"""
-        address = self.db_sub.address
-        self.sub['address'] = address.address1
-        self.sub['address_addition'] = address.address2
-        if address.post_code != 0:
-            self.sub['post_code'] = '%05d' % address.post_code
-        else:
-            self.sub['post_code'] = ''
-        self.sub['city'] = address.city

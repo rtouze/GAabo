@@ -37,12 +37,12 @@ class MenuBar(wx.Panel):
                 )
         self.buttons['gen_mailing'] = wx.Button(
                 self,
-                self.frame.SPECIAL_ISSUE_BTN_ID,
+                -1,
                 u'Génération liste de mailing'
                 )
         self.buttons['gen_paper_mailing'] = wx.Button(
                 self,
-                self.frame.SPECIAL_ISSUE_BTN_ID,
+                -1,
                 u'Génération liste mailing papier'
                 )
 

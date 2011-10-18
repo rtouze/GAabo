@@ -8,6 +8,7 @@ import sys
 import datetime
 
 from gaabo_controler import Controler
+import gaabo_controler
 from subscriber import Subscriber
 import subscriber_exporter
 import panels
@@ -58,7 +59,7 @@ class GaaboFrame(wx.Frame):
     def update_subscriber_counter(self):
         """Update number of subscriber in notification area"""
         self.status_bar.SetStatusText(
-                u'Nb abonnés : %d' % self.controler.get_subscription_count(),
+                u'Nb abonnés : %d' % gaabo_controler.get_subscription_count(),
                 2)
 
     def show_subscriber_creation_form(self, event):
@@ -113,7 +114,7 @@ class GaaboFrame(wx.Frame):
                     unicode(self.searched_email_in.GetValue(), self.encoding)
                     )
 
-        subscriber_list = self.controler.get_searched_customer_list(
+        subscriber_list = gaabo_controler.get_searched_subscriber_list(
             self.searched_list[0],
             self.searched_list[1],
             self.searched_list[2]
@@ -161,9 +162,9 @@ class GaaboFrame(wx.Frame):
     def export_subscriber_for_routage(self, event):
         file_path = self.right_panel.exported_file_field.GetValue()
         if self.is_special_issue is True:
-            self.controler.export_special_issue_routage_file(file_path)
+            gaabo_controler.export_special_issue_routing_file(file_path)
         else:
-            self.controler.export_regular_issue_routage_file(file_path)
+            gaabo_controler.export_regular_issue_routing_file(file_path)
         dialog = wx.MessageDialog(
                 None,
                 u'Le fichier de routage a été créé. ' +
@@ -174,9 +175,9 @@ class GaaboFrame(wx.Frame):
                 )
         if dialog.ShowModal() == wx.ID_OK:
             if self.is_special_issue is True:
-                self.controler.decrement_special_issues_to_receive()
+                gaabo_controler.decrement_special_issues_to_receive()
             else:
-                self.controler.decrement_normal_issues_to_receive()
+                gaabo_controler.decrement_normal_issues_to_receive()
 
     def show_file_browser(self, event):
         """Display a browser to navigate through the files"""
