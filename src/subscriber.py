@@ -19,14 +19,11 @@ class Subscriber(object):
         self.firstname = ''
         self.company = ''
         self.name_addition = ''
-        self.address = ''
-        self.address_addition = ''
-        self.post_code = 0
-        self.city = ''
+        self.address = Address()
         self.email_address = ''
         self.subscriber_since_issue = 0
         self.subscription_date = datetime.date.today()
-        self.issues_to_receive = self.ISSUES_IN_A_YEAR
+        self.issues_to_receive = 0
         self.subs_beginning_issue = 0
         self.member = 0
         self.subscription_price = 0.0
@@ -80,6 +77,12 @@ class Subscriber(object):
         adhoc_dao = SubscriberDAO()
         return adhoc_dao.get_count()
 
+    @classmethod
+    def delete_from_id(cls, identifier):
+        """Delete a sbscriber from the db using provided id"""
+        adhoc_dao = SubscriberDAO()
+        adhoc_dao.delete(identifier)
+
     def save(self):
         if self.identifier == -1:
             self.dao.save(self)
@@ -92,13 +95,26 @@ class Subscriber(object):
 
     def get_attribute_sequence(self):
         return (self.lastname, self.firstname, self.company,
-                self.name_addition, self.address, self.address_addition,
-                self.post_code, self.city, self.email_address,
+                self.name_addition) + \
+                self.address.to_tuple() + \
+                (self.email_address,
                 self.subscriber_since_issue, self.subscription_date,
                 self.issues_to_receive, self.subs_beginning_issue,
                 self.member, self.subscription_price, self.membership_price,
                 self.hors_serie1, self.hors_serie2, self.hors_serie3,
                 self.sticker_sent, self.comment, self.bank, self.ordering_type)
+
+class Address(object):
+    """Class that represent the subscriber address. It's a simple data
+    structure"""
+    def __init__(self):
+        self.address1 = ''
+        self.address2 = ''
+        self.post_code = 0
+        self.city = ''
+
+    def to_tuple(self):
+        return (self.address1, self.address2, self.post_code, self.city)
 
 ################################################################################
 
@@ -149,32 +165,31 @@ class SubscriberDAO(object):
         sublist = []
         for row in self.result:
             sub = Subscriber()
-            (sub.identifier, 
-            sub.lastname, 
-            sub.firstname, 
-            sub.company, 
-            sub.name_addition, 
-            sub.address, 
-            sub.address_addition, 
-            sub.post_code, 
-            sub.city, 
-            sub.email_address, 
-            sub.subscriber_since_issue, 
-            iso_date_string,
-            sub.issues_to_receive, 
-            sub.subs_beginning_issue, 
-            sub.member, 
-            sub.subscription_price, 
-            sub.membership_price,
-            sub.hors_serie1,
-            sub.hors_serie2,
-            sub.hors_serie3,
-            sub.sticker_sent,
-            sub.comment,
-            sub.bank,
-            sub.ordering_type
-            ) = row
+            address = Address()
+            sub.identifier = row[0]
+            sub.lastname = row[1]
+            sub.firstname = row[2]
+            sub.company = row[3]
+            sub.name_addition = row[4]
+            address.address1 = row[5]
+            address.address2 = row[6]
+            address.post_code = row[7]
+            address.city = row[8]
+            sub.email_address = row[9] 
+            sub.subscriber_since_issue = row[10] 
+            iso_date_string = row[11]
+            sub.issues_to_receive = row[12] 
+            sub.subs_beginning_issue = row[13] 
+            sub.member = row[14] 
+            sub.subscription_price = row[15] 
+            sub.membership_price = row[16]
+            sub.hors_serie1 = row[17]
+            sub.sticker_sent = row[20]
+            sub.comment = row[21]
+            sub.ordering_type = row[23]
+            
             sub.subscription_date = date_from_iso(iso_date_string)
+            sub.address = address
             sublist.append(sub)
         return sublist
 
@@ -259,6 +274,7 @@ class SubscriberDAO(object):
         for row in result: return row[0]
 
 # Module Functions
+# TODO extract ! Subscriber does not care about this date stuff!
 
 def date_from_iso(iso_date_string):
     default_date = datetime.date(1900, 01, 01)

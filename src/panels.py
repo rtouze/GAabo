@@ -23,7 +23,7 @@ class MenuBar(wx.Panel):
         self.bind_events()
 
     def create_buttons(self):
-        """Create the butons that will be in the MenuBar"""
+        """Create the buttons that will be in the MenuBar"""
         self.buttons['create'] = \
                 wx.Button(self, -1, u'Créer abonné')
         self.buttons['modify'] = \
@@ -103,19 +103,21 @@ class EditionPanel(wx.Panel):
 
         box = wx.BoxSizer(wx.VERTICAL)
         self.frame = frame
-        if frame.current_edited_subscriber is None:
-            self.subscriber = None
-        else:
-            self.subscriber = frame.current_edited_subscriber
         box.Add(self.get_panel_title())
         grid = wx.FlexGridSizer(20, 2, 5, 5)
         self.pairs = []
-        self.generate_pair_list()
+        self.controler = self.frame.controler
 
-        for pair in self.pairs:
-            grid.Add(pair[0], flag=wx.ALIGN_CENTER_VERTICAL)
-            grid.Add(pair[1], flag=wx.ALIGN_CENTER_VERTICAL)
-
+        for field_pair in gaabo_constants.field_names:
+            key = field_pair[0]
+            field = field_pair[1]
+            grid.Add(wx.StaticText(self, -1, field), flag=wx.ALIGN_CENTER_VERTICAL)
+            if key in self.controler.subscriber_values.keys():
+                value = unicode(self.controler.subscriber_values[key])
+            else:
+                value = None
+            self.controler.field_widget_dict[key] = self.set_text_field(value)
+            grid.Add(self.controler.field_widget_dict[key], flag=wx.ALIGN_CENTER_VERTICAL) 
         box.Add(grid)
         box.Add(self.generate_button_box())
         self.SetSizer(box)
@@ -123,85 +125,37 @@ class EditionPanel(wx.Panel):
     def get_panel_title(self):
         """Generate the title of the panel, wether we are creating a new
         subscriber or editing a new one."""
-        if self.subscriber is None:
+        if len(self.frame.subscriber_values) == 0:
             return wx.StaticText(self, -1, u'Édition d\'un nouvel abonne\n')
         else:
             return wx.StaticText(self, -1, u'Édition de l\'abonne\n')
 
-    def generate_pair_list(self):
-        """Generate the list of field names, field values pairs)."""
-        index = 0
-        for items in gaabo_constants.field_names:
-            self.pairs.append(self.get_subscriber_edition_pairs(index))
-            index += 1
-    
-    def get_subscriber_edition_pairs(self, field_label_id):
-        """Generate a pair of field name + field value"""
-        field_constant_list = gaabo_constants.field_names
-        displayed_field_name = field_constant_list[field_label_id][1]
-        internal_field_name = field_constant_list[field_label_id][0]
-        subscriber_field_name = field_constant_list[field_label_id][0]
-        if subscriber_field_name == 'subscription_date':
-            label = wx.StaticText(
-                    self,
-                    -1,
-                    displayed_field_name + ' (jj/mm/aaaa)'
-                    )
-        else:
-            label = wx.StaticText(self, -1, displayed_field_name)
-
-        if self.subscriber is None:
-            self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
+    def set_text_field(self, field_value=None):
+        """Returns an unicode formated TextCtrl containing field_value"""
+        if field_value is None:
+            widget = wx.TextCtrl(
                     self,
                     -1,
                     size=(200, FIELD_HEIGHT)
                     )
         else:
-            if subscriber_field_name == 'subscription_date':
-                subscr_date = self.subscriber.subscription_date
-                if subscr_date is None:
-                    self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
-                            self,
-                            -1,
-                            size=(200, FIELD_HEIGHT)
-                            )
-                else:
-                    self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
-                            self,
-                            -1,
-                            subscr_date.strftime('%d/%m/%Y'),
-                            size=(200, FIELD_HEIGHT)
-                            )
-            elif subscriber_field_name == 'post_code':
-                post_code = self.subscriber.post_code
-                formatted_post_code = ''
-                if (unicode(post_code).isdigit() and post_code != 0):
-                    formatted_post_code = '%05d' % post_code
-                self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
-                        self,
-                        -1,
-                        formatted_post_code,
-                        size=(200, FIELD_HEIGHT)
-                        )
-            else:
-                self.frame.field_widget_dict[field_label_id] = wx.TextCtrl(
-                        self,
-                        -1,
-                        unicode(
-                            self.subscriber.__dict__[subscriber_field_name]
-                            ),
-                        size=(200, FIELD_HEIGHT)
-                        )
-        return (label, self.frame.field_widget_dict[field_label_id])
+            widget = wx.TextCtrl(
+                    self,
+                    -1,
+                    unicode(field_value),
+                    size=(200, FIELD_HEIGHT)
+                    )
+        return widget
 
     def generate_button_box(self):
         """Generate the OK buton pqrt with the action binding"""
         button_box = wx.BoxSizer(wx.HORIZONTAL)
         ok_button = wx.Button(self, -1, 'Ok')
         button_box.Add(ok_button)
+
         self.frame.Bind(
                 wx.EVT_BUTTON,
-                self.frame.save_subscriber_action,
+                self.controler.save_subscriber_action,
                 id=ok_button.GetId()
                 )
         return button_box
@@ -224,46 +178,44 @@ class SearchPanel(wx.Panel):
         self.box.Add(wx.StaticText(self, -1, u'Entrer les critères de recherche :\n'))
         grid = wx.FlexGridSizer(3, 2, 5, 5)
 
-        self.__add_name_search_field(grid)
+        self._add_name_search_field(grid)
 
-        self.__add_company_search_field(grid)
+        self._add_company_search_field(grid)
 
-        self.__add_email_search_field(grid)
+        self._add_email_search_field(grid)
 
         self.box.Add(grid)
         search_button = wx.Button(self, -1, u'Rechercher')
         self.frame.Bind(wx.EVT_BUTTON, self.frame.search_subscriber, id=search_button.GetId())
         self.box.Add(search_button)
 
-    def __add_name_search_field(self, grid):
+    def _add_name_search_field(self, grid):
         grid.Add(wx.StaticText(self, -1, 'Nom de famille'), flag=wx.ALIGN_CENTER_VERTICAL)
-        self.frame.searched_name_in = self.__get_common_search_field(1)
+        self.frame.searched_name_in = self._get_common_search_field('name')
         grid.Add(self.frame.searched_name_in, flag=wx.ALIGN_CENTER_VERTICAL)
 
-    def __add_company_search_field(self, grid):
+    def _add_company_search_field(self, grid):
         grid.Add(wx.StaticText(self, -1, u'Nom société'), flag=wx.ALIGN_CENTER_VERTICAL)
-        self.frame.searched_company_in = self.__get_common_search_field(2)
+        self.frame.searched_company_in = self._get_common_search_field('company')
         grid.Add(self.frame.searched_company_in, flag=wx.ALIGN_CENTER_VERTICAL)
 
-    def __add_email_search_field(self, grid):
+    def _add_email_search_field(self, grid):
         grid.Add(wx.StaticText(self, -1, u'Adresse email'), flag=wx.ALIGN_CENTER_VERTICAL)
-        self.frame.searched_email_in = self.__get_common_search_field(3)
+        self.frame.searched_email_in = self._get_common_search_field('email')
         grid.Add(self.frame.searched_email_in, flag=wx.ALIGN_CENTER_VERTICAL)
 
-    def __get_common_search_field(self, field_position):
+    def _get_common_search_field(self, key):
         """We assume that field_position is > 0. No control implemented."""
         sizing_pair = (200, FIELD_HEIGHT)
-        field_index = field_position - 1
-
-        if len(self.frame.searched_list) < field_position:
-            field = wx.TextCtrl( self, -1, size=sizing_pair)
-        else:
+        if key in self.frame.searched_params.keys():
             field = wx.TextCtrl(
                     self,
                     -1,
-                    self.frame.searched_list[field_index],
+                    self.frame.searched_params[key],
                     size=sizing_pair
                     )
+        else:
+            field = wx.TextCtrl(self, -1, size=sizing_pair)
         return field
 
     def add_result(self, subscriber_list):
@@ -324,15 +276,15 @@ class SearchPanel(wx.Panel):
                     )
 
             self.result_grid.Add(
-                    wx.StaticText(self, -1, subscriber.lastname),
+                    wx.StaticText(self, -1, subscriber['lastname']),
                     flag=wx.ALIGN_CENTER_VERTICAL
                     )
             self.result_grid.Add(
-                    wx.StaticText(self, -1, subscriber.firstname),
+                    wx.StaticText(self, -1, subscriber['firstname']),
                     flag=wx.ALIGN_CENTER_VERTICAL
                     )
             self.result_grid.Add(
-                    wx.StaticText(self, -1, subscriber.company),
+                    wx.StaticText(self, -1, subscriber['company']),
                     flag=wx.ALIGN_CENTER_VERTICAL
                     )
             self.result_grid.Add(modify_button, flag=wx.ALIGN_CENTER_VERTICAL)

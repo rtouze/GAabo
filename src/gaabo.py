@@ -8,6 +8,7 @@ import sys
 import datetime
 
 from gaabo_controler import Controler
+import gaabo_controler
 from subscriber import Subscriber
 import subscriber_exporter
 import panels
@@ -21,18 +22,19 @@ class GaaboFrame(wx.Frame):
         #TODO Too many fields in this class
         wx.Frame.__init__(self, parent, title=title, size=(1024, 800))
         self.encoding = sys.getfilesystemencoding()
-        self.controler = Controler()
+        self.controler = Controler(self)
         # List of the fields used to edit a subscriber
         self.field_widget_dict = {} 
-        self.searched_list = []
+        self.searched_params = {}
         self.searched_name_in = None
         self.searched_company_in = None
         self.searched_email_in = None
         self.subs_dict = {}
 
+        self.subscriber_values = {}
+
         self.setup_status_bar()
 
-        self.current_edited_subscriber = None
         self.parent_panel = wx.Panel(self, -1)
         self.right_panel = wx.Panel(self.parent_panel, -1)
         self.left_panel = panels.MenuBar(self)
@@ -56,11 +58,11 @@ class GaaboFrame(wx.Frame):
     def update_subscriber_counter(self):
         """Update number of subscriber in notification area"""
         self.status_bar.SetStatusText(
-                u'Nb abonnés : %d' % self.controler.get_subscription_count(),
+                u'Nb abonnés : %d' % gaabo_controler.get_subscription_count(),
                 2)
 
     def show_subscriber_creation_form(self, event):
-        self.current_edited_subscriber = None
+        self.controler.subscriber_values = {}
         self.get_subscriber_edition_panel()
 
     def refresh_window(self):
@@ -75,10 +77,9 @@ class GaaboFrame(wx.Frame):
         self.right_panel = panels.EditionPanel(self)
         self.refresh_window()
 
-    def save_subscriber_action(self, event):
+    def show_save_confirmation(self):
         # TODO Mettre une alerte : on ne peut pas creer un abonne avec le nom ou
         # l'adresse vide !
-        self.save_subscriber()
         dialog = wx.MessageDialog(
                 None,
                 u'L\'abonné a été sauvegardé',
@@ -89,88 +90,21 @@ class GaaboFrame(wx.Frame):
         self.status_bar.SetStatusText(u'Abonné modifié', 1)
         self.update_subscriber_counter()
 
-    def save_subscriber(self, input_subscriber=None):
-        if self.current_edited_subscriber is None:
-            self.current_edited_subscriber = Subscriber()
-        field_constant_list = gaabo_constants.field_names
-        for key in self.field_widget_dict.keys():
-            subscriber_field_name = field_constant_list[key][0]
-            if subscriber_field_name == 'subscription_date':
-                self.__write_date(key)
-            elif self.is_integer_field(subscriber_field_name):
-                self.__write_int(key)
-            else:
-                self.__write_field(key)
-
-        self.current_edited_subscriber.save()
-
-    def is_integer_field(self, field_name):
-        """Check if the field must contain an integer"""
-        return (
-                field_name == 'hors_serie1' 
-                or field_name == 'issues_to_receive'
-                )
-
-    def __write_date(self, key):
-        field_value = self.field_widget_dict[key].GetValue()
-        if field_value.strip() != '':
-            date_array = field_value.split('/')
-            self.current_edited_subscriber.subscription_date = datetime.date(
-                            int(date_array[2]),
-                            int(date_array[1]),
-                            int(date_array[0])
-                            )
-        else:
-            self.current_edited_subscriber.subscription_date = None
-
-    def __write_int(self, key):
-        field_value = self.field_widget_dict[key].GetValue()
-        field_name = gaabo_constants.field_names[key][0]
-        if field_value.isdigit():
-            int_value = int(field_value)
-        else:
-            int_value = 0
-        self.current_edited_subscriber.__dict__[field_name] = int_value
-
-    def __write_field(self, key):
-        subscriber_field_name = gaabo_constants.field_names[key][0]
-        if self.encoding == 'UTF-8':
-            self.current_edited_subscriber.__dict__[subscriber_field_name] = (
-                    unicode(self.field_widget_dict[key].GetValue())
-                    )
-        else:
-            self.current_edited_subscriber.__dict__[subscriber_field_name] = (
-                    unicode(self.field_widget_dict[key].GetValue(), self.encoding)
-                    )
-
     def show_search_form(self, event):
         self.right_panel.Destroy()
         self.right_panel = panels.SearchPanel(self)
         self.refresh_window()
 
     def search_subscriber(self, event):
-        self.searched_list = []
-        #TODO c'est moche, voir s'il n'y a pas une meilleur facon
-        if self.encoding == 'UTF-8':
-            self.searched_list.append(self.searched_name_in.GetValue())
-            self.searched_list.append(self.searched_company_in.GetValue())
-            self.searched_list.append(self.searched_email_in.GetValue())
-        else:
-            self.searched_list.append(
-                    unicode(self.searched_name_in.GetValue(), self.encoding)
-                    )
-            self.searched_list.append(
-                    unicode(self.searched_company_in.GetValue(), self.encoding)
-                    )
-            self.searched_list.append(
-                    unicode(self.searched_email_in.GetValue(), self.encoding)
-                    )
+        self.searched_params = {}
+        self.searched_params['name'] = self.searched_name_in.GetValue()
+        self.searched_params['company'] = self.searched_company_in.GetValue()
+        self.searched_params['email'] = self.searched_email_in.GetValue()
 
-        subscriber_list = self.controler.get_searched_customer_list(
-            self.searched_list[0],
-            self.searched_list[1],
-            self.searched_list[2]
+        subscriber_list = gaabo_controler.get_searched_subscriber_list(
+                self.searched_params
                 )
+
         self.get_search_panel_with_result(subscriber_list)
 
     def get_search_panel_with_result(self, subscriber_list):
@@ -180,21 +114,21 @@ class GaaboFrame(wx.Frame):
         self.refresh_window()
 
     def modify_subscriber_form(self, event):
-        self.current_edited_subscriber = self.subs_dict[event.GetId()]
+        self.controler.subscriber_values = self.subs_dict[event.GetId()]
         self.get_subscriber_edition_panel()
 
     def delete_subscriber(self, event):
-        subscriber = self.subs_dict[event.GetId()]
+        self.controler.subscriber_values = self.subs_dict[event.GetId()]
         dialog = wx.MessageDialog(
                 None,
                 u'Ètes-vous sur de vouloir supprimer l\'abonné %s ?' 
-                % subscriber.lastname,
+                % self.controler.subscriber_values['lastname'],
                 u'Suppression d\'abonné',
                 style=wx.OK | wx.CANCEL | wx.ICON_EXCLAMATION
                 )
         result = dialog.ShowModal()
         if result == wx.ID_OK:
-            self.controler.delete_subscriber(subscriber)
+            self.controler.delete_subscriber()
             self.status_bar.SetStatusText(u'Abonne supprimé', 1)
             self.search_subscriber(event)
             self.update_subscriber_counter()
@@ -214,9 +148,9 @@ class GaaboFrame(wx.Frame):
     def export_subscriber_for_routage(self, event):
         file_path = self.right_panel.exported_file_field.GetValue()
         if self.is_special_issue is True:
-            self.controler.export_special_issue_routage_file(file_path)
+            gaabo_controler.export_special_issue_routing_file(file_path)
         else:
-            self.controler.export_regular_issue_routage_file(file_path)
+            gaabo_controler.export_regular_issue_routing_file(file_path)
         dialog = wx.MessageDialog(
                 None,
                 u'Le fichier de routage a été créé. ' +
@@ -227,13 +161,17 @@ class GaaboFrame(wx.Frame):
                 )
         if dialog.ShowModal() == wx.ID_OK:
             if self.is_special_issue is True:
-                self.controler.decrement_special_issues_to_receive()
+                gaabo_controler.decrement_special_issues_to_receive()
             else:
-                self.controler.decrement_normal_issues_to_receive()
+                gaabo_controler.decrement_normal_issues_to_receive()
 
     def show_file_browser(self, event):
         """Display a browser to navigate through the files"""
-        browser = wx.FileDialog(self, "Choisir fichier de destination", style=wx.SAVE)
+        browser = wx.FileDialog(
+                self,
+                "Choisir fichier de destination",
+                style=wx.SAVE
+                )
         if browser.ShowModal() == wx.ID_OK:
             exported_file_path = browser.GetPath()
             self.show_exporter_panel(exported_file_path)
@@ -242,19 +180,15 @@ class GaaboFrame(wx.Frame):
         """Generate the email list for resubscription campain"""
         file_name = '../email_resubscription.txt'
         exporter = subscriber_exporter.EmailExporter(file_name)
-        exporter.do_export()
-        dialog = wx.MessageDialog(
-                None,
-                u'Fichier %s généré' % file_name,
-                'Confirmation',
-                style=wx.OK
-                )
-        dialog.ShowModal()
+        self._generic_exporter(exporter, file_name)
 
     def generate_paper_mailing_list(self, event):
         """Generate the email list for resubscription campain"""
         file_name = '../resubscription.csv'
         exporter = subscriber_exporter.ReSubscribeExporter(file_name)
+        self._generic_exporter(exporter, file_name)
+
+    def _generic_exporter(self, exporter, file_name):
         exporter.do_export()
         dialog = wx.MessageDialog(
                 None,
@@ -265,9 +199,6 @@ class GaaboFrame(wx.Frame):
         dialog.ShowModal()
 
 if __name__ == '__main__':
-    """NOTE: configuration
-    Sous windows, le home dir est identifie comme %HOMEDRIVE%\%HOMEPATH%
-    Sous *nix, c'est $HOME :)"""
     prog = wx.App(0)
     frame = GaaboFrame(None, 'GAabo')
     prog.MainLoop()
