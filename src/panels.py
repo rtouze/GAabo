@@ -191,33 +191,31 @@ class SearchPanel(wx.Panel):
 
     def _add_name_search_field(self, grid):
         grid.Add(wx.StaticText(self, -1, 'Nom de famille'), flag=wx.ALIGN_CENTER_VERTICAL)
-        self.frame.searched_name_in = self._get_common_search_field(1)
+        self.frame.searched_name_in = self._get_common_search_field('name')
         grid.Add(self.frame.searched_name_in, flag=wx.ALIGN_CENTER_VERTICAL)
 
     def _add_company_search_field(self, grid):
         grid.Add(wx.StaticText(self, -1, u'Nom société'), flag=wx.ALIGN_CENTER_VERTICAL)
-        self.frame.searched_company_in = self._get_common_search_field(2)
+        self.frame.searched_company_in = self._get_common_search_field('company')
         grid.Add(self.frame.searched_company_in, flag=wx.ALIGN_CENTER_VERTICAL)
 
     def _add_email_search_field(self, grid):
         grid.Add(wx.StaticText(self, -1, u'Adresse email'), flag=wx.ALIGN_CENTER_VERTICAL)
-        self.frame.searched_email_in = self._get_common_search_field(3)
+        self.frame.searched_email_in = self._get_common_search_field('email')
         grid.Add(self.frame.searched_email_in, flag=wx.ALIGN_CENTER_VERTICAL)
 
-    def _get_common_search_field(self, field_position):
+    def _get_common_search_field(self, key):
         """We assume that field_position is > 0. No control implemented."""
         sizing_pair = (200, FIELD_HEIGHT)
-        field_index = field_position - 1
-
-        if len(self.frame.searched_list) < field_position:
-            field = wx.TextCtrl( self, -1, size=sizing_pair)
-        else:
+        if key in self.frame.searched_params.keys():
             field = wx.TextCtrl(
                     self,
                     -1,
-                    self.frame.searched_list[field_index],
+                    self.frame.searched_params[key],
                     size=sizing_pair
                     )
+        else:
+            field = wx.TextCtrl(self, -1, size=sizing_pair)
         return field
 
     def add_result(self, subscriber_list):

@@ -25,7 +25,7 @@ class GaaboFrame(wx.Frame):
         self.controler = Controler(self)
         # List of the fields used to edit a subscriber
         self.field_widget_dict = {} 
-        self.searched_list = []
+        self.searched_params = {}
         self.searched_name_in = None
         self.searched_company_in = None
         self.searched_email_in = None
@@ -63,7 +63,7 @@ class GaaboFrame(wx.Frame):
                 2)
 
     def show_subscriber_creation_form(self, event):
-        self.current_edited_subscriber = None
+        self.controler.subscriber_values = {}
         self.get_subscriber_edition_panel()
 
     def refresh_window(self):
@@ -97,28 +97,15 @@ class GaaboFrame(wx.Frame):
         self.refresh_window()
 
     def search_subscriber(self, event):
-        self.searched_list = []
-        #TODO c'est moche, voir s'il n'y a pas une meilleur facon
-        if self.encoding == 'UTF-8':
-            self.searched_list.append(self.searched_name_in.GetValue())
-            self.searched_list.append(self.searched_company_in.GetValue())
-            self.searched_list.append(self.searched_email_in.GetValue())
-        else:
-            self.searched_list.append(
-                    unicode(self.searched_name_in.GetValue(), self.encoding)
-                    )
-            self.searched_list.append(
-                    unicode(self.searched_company_in.GetValue(), self.encoding)
-                    )
-            self.searched_list.append(
-                    unicode(self.searched_email_in.GetValue(), self.encoding)
-                    )
+        self.searched_params = {}
+        self.searched_params['name'] = self.searched_name_in.GetValue()
+        self.searched_params['company'] = self.searched_company_in.GetValue()
+        self.searched_params['email'] = self.searched_email_in.GetValue()
 
         subscriber_list = gaabo_controler.get_searched_subscriber_list(
-            self.searched_list[0],
-            self.searched_list[1],
-            self.searched_list[2]
+                self.searched_params
                 )
+
         self.get_search_panel_with_result(subscriber_list)
 
     def get_search_panel_with_result(self, subscriber_list):
@@ -181,7 +168,11 @@ class GaaboFrame(wx.Frame):
 
     def show_file_browser(self, event):
         """Display a browser to navigate through the files"""
-        browser = wx.FileDialog(self, "Choisir fichier de destination", style=wx.SAVE)
+        browser = wx.FileDialog(
+                self,
+                "Choisir fichier de destination",
+                style=wx.SAVE
+                )
         if browser.ShowModal() == wx.ID_OK:
             exported_file_path = browser.GetPath()
             self.show_exporter_panel(exported_file_path)
@@ -190,19 +181,15 @@ class GaaboFrame(wx.Frame):
         """Generate the email list for resubscription campain"""
         file_name = '../email_resubscription.txt'
         exporter = subscriber_exporter.EmailExporter(file_name)
-        exporter.do_export()
-        dialog = wx.MessageDialog(
-                None,
-                u'Fichier %s généré' % file_name,
-                'Confirmation',
-                style=wx.OK
-                )
-        dialog.ShowModal()
+        self._generic_exporter(exporter, file_name)
 
     def generate_paper_mailing_list(self, event):
         """Generate the email list for resubscription campain"""
         file_name = '../resubscription.csv'
         exporter = subscriber_exporter.ReSubscribeExporter(file_name)
+        self._generic_exporter(exporter, file_name)
+
+    def _generic_exporter(self, exporter, file_name):
         exporter.do_export()
         dialog = wx.MessageDialog(
                 None,
@@ -213,9 +200,6 @@ class GaaboFrame(wx.Frame):
         dialog.ShowModal()
 
 if __name__ == '__main__':
-    """NOTE: configuration
-    Sous windows, le home dir est identifie comme %HOMEDRIVE%\%HOMEPATH%
-    Sous *nix, c'est $HOME :)"""
     prog = wx.App(0)
     frame = GaaboFrame(None, 'GAabo')
     prog.MainLoop()
