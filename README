@@ -14,6 +14,8 @@ Ce logiciel est écrit en Python, il a été testé sur GNU Debian 6, Windows XP
 * Python 2.7 : http://www.python.org/download/
 * wxPython (attention : prendre la version unicode) http://www.wxpython.org/download.php#stable
 
+Pour le lancer, exécuter le script gaabo.py du répertoire src.
+
 Il se base sur une base de donnée sqlite3 pour créer et modifier des abonnés.
 
 Il permet une recherche d'abonnés à partir de leur nom, entreprise et adresse email.
