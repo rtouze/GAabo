@@ -117,7 +117,7 @@ class Controler(object):
 
     def save_subscriber_action(self, event):
         """Called by the edition panel to save the subscriber in database"""
-        sub = {}
+        sub = self.subscriber_values
         for key in self.field_widget_dict.keys():
             sub[key] = self.field_widget_dict[key].GetValue()
         adapter = SubscriberAdapter(sub)

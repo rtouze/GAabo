@@ -74,7 +74,10 @@ class SubscriberAdapterTest(SubscriberAdapterAbstractTest):
         actual = self._save(sub)
         self.assertEquals(ident, actual['subscriber_id'])
 
-        retrieved_sub = self._retrieve_one_from_lastname('toto')
+        subs_list = Subscriber.get_subscribers_from_lastname('toto')
+        self.assertEqual(len(subs_list), 1)
+
+        retrieved_sub = subs_list[0]
         self.assertEquals(ident, retrieved_sub.identifier)
 
     def test_subscriber_with_address_retrieve(self):
@@ -320,6 +323,7 @@ class SubscriberRetrievalTest(SubscriberAdapterAbstractTest):
         self.assertEquals('1', new_sub['hors_serie1'])
         self.assertEquals('pp', new_sub['ordering_type'])
         self.assertEquals('blahblah', new_sub['comment'])
+        self.assertEquals(sub.identifier, new_sub['subscriber_id'])
 
     def test_subscriber_with_wrong_pricing_info(self):
         """Tests what happens when Subscriber has wrong or empty pricing
