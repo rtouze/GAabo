@@ -23,9 +23,12 @@ def date_string_from_iso(iso_date_string):
 
 def format_postcode(postcode):
     """Format the post code as a 5 digit string"""
-    if (unicode(postcode).isdigit() and postcode != 0):
-        return '%05d' % postcode
-    else:
+    try:
+        if (postcode != 0):
+            return '%05d' % postcode
+        else:
+            return ''
+    except TypeError:
         return ''
 
 class AbstractExporter(object):

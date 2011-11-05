@@ -8,14 +8,6 @@ from subscriber import Subscriber
 from subscriber import Address
 from subscriber_exporter import RoutageExporter
 
-def get_searched_subscriber_list_old(lastname, company, email):
-    """Retrieves a subscriber dictionary using its lastname, company or
-    email"""
-    # TODO improve : retrieve id, lastname, company then retrieve the
-    # customer when edition is demanded
-    subs_list = populate_subs_list(lastname, company, email)
-    return refine_subs_list(subs_list)
-
 def get_searched_subscriber_list(parameters):
     """Find a subscriber using the dict parameter as search criteria"""
     # TODO improve : retrieve id, lastname, company then retrieve the
@@ -30,24 +22,6 @@ def populate_subs_list(parameters):
     company = parameters['company']
     email = parameters ['email']
 
-    if lastname:
-        subs_list.extend(
-                SubscriberAdapter.get_subscribers_from_lastname(lastname)
-                )
-    if company:
-        subs_list.extend(
-                SubscriberAdapter.get_subscribers_from_company(company)
-                )
-    if email:
-        subs_list.extend(
-                SubscriberAdapter.get_subscribers_from_email(email)
-                )
-    return subs_list
-
-
-def populate_subs_list2(lastname, company, email):
-    """Get a list of subscribers matching given criteria"""
-    subs_list = []
     if lastname:
         subs_list.extend(
                 SubscriberAdapter.get_subscribers_from_lastname(lastname)
@@ -321,13 +295,22 @@ class SubscriberAdapter(object):
     def _get_address_info(self):
         """Retrieves the address information from the Subscriber"""
         address = self.db_sub.address
+        self._get_addr_txt_info(address)
+        self._get_post_code(address)
+
+    def _get_addr_txt_info(self, address):
         self.sub['address'] = address.address1
         self.sub['address_addition'] = address.address2
-        if address.post_code != 0:
-            self.sub['post_code'] = '%05d' % address.post_code
-        else:
-            self.sub['post_code'] = ''
         self.sub['city'] = address.city
+
+    def _get_post_code(self, address):
+        try:
+            if address.post_code != 0:
+                self.sub['post_code'] = '%05d' % address.post_code
+            else:
+                self.sub['post_code'] = ''
+        except TypeError:
+                self.sub['post_code'] = ''
 
     def _get_subscription_info(self):
         """Retrives and converts the subscription info from the db"""

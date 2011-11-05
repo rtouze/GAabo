@@ -9,7 +9,7 @@ import codecs
 import datetime
 
 import gaabo_conf
-from subscriber import Subscriber
+from subscriber import Subscriber, Address
 import subscriber_exporter
 
 TEST_FILE = 'export_test.csv'
@@ -63,9 +63,11 @@ class RoutageExportTest(AbstractExportTest):
         subs = Subscriber()
         subs.lastname = 'Debelle'
         subs.firstname = 'Anne'
-        subs.address = 'rue dupre 63'
-        subs.address_addition = 'Bruxelles 1090'
-        subs.city = 'belgique'
+        a = Address()
+        a.address1 = 'rue dupre 63'
+        a.address2 = 'Bruxelles 1090'
+        a.city = 'belgique'
+        subs.address = a
         subs.issues_to_receive = 1
         subs.save()
 
@@ -145,11 +147,13 @@ class RoutageExportTest(AbstractExportTest):
         subscriber.lastname = big_string
         subscriber.firstname = big_string
         subscriber.company = big_string
-        subscriber.address = big_string
-        subscriber.address_addition = big_string
-        subscriber.post_code = 123456 
+        a = Address()
+        a.address1 = big_string
+        a.address2 = big_string
+        a.post_code = 123456 
+        a.city = big_string
+        subscriber.address = a
         subscriber.issues_to_receive = 10
-        subscriber.city = big_string
         subscriber.save()
         line = self.export_and_get_first_line()
 
@@ -182,9 +186,12 @@ class RoutageExportTest(AbstractExportTest):
     def test_5_digit_post_code(self):
         """Checks that the exported post_code is always written with 5 digits,
         even if the first one is 0."""
-        subscriber = Subscriber()
-        subscriber.post_code = 1300
-        subscriber.save()
+        sub = Subscriber()
+        sub.issues_to_receive = 1
+        a = Address()
+        a.post_code = 1300
+        sub.address = a
+        sub.save()
         line = self.export_and_get_first_line()
         splitted_line = line.split('\t')
         self.assertEqual(splitted_line[8], '01300')
@@ -193,7 +200,10 @@ class RoutageExportTest(AbstractExportTest):
         """Test that former empty postcode leads to no export error exception"""
         subscriber = Subscriber()
         subscriber.lastname = 'toto'
-        subscriber.post_code = ''
+        subscriber.issues_to_receive = 1
+        a = Address()
+        a.post_code = 0
+        subscriber.address = a
         subscriber.save()
         line = self.export_and_get_first_line()
         self.assertEqual(line.split('\t')[8], '')
@@ -202,10 +212,13 @@ class RoutageExportTest(AbstractExportTest):
         """Tests that if we have a name_addition, it goes in the first address
         field"""
         subscriber = Subscriber()
+        subscriber.issues_to_receive = 1
         subscriber.lastname = 'Dupond'
         subscriber.firstname = 'Toto'
         subscriber.name_addition = 'Chez lulu'
-        subscriber.address = '14 Rue lalala'
+        a = Address()
+        a.address1 = '14 Rue lalala'
+        subscriber.address = a
         subscriber.save()
         line = self.export_and_get_first_line()
         splitted = line.split('\t')
@@ -251,7 +264,7 @@ class CsvExporterTest(AbstractExportTest):
         self.save_wrong_date_subscriber()
         self.exporter.do_export()
         actual_line = get_second_line()
-        expected_line = u'John Doe;;;6;0;0.0;0.0;12/07/0211\r\n'
+        expected_line = u'John Doe;;;0;0;0.0;0.0;12/07/0211\r\n'
         self.assertEquals(expected_line, actual_line)
 
     def save_wrong_date_subscriber(self):
@@ -266,7 +279,9 @@ class CsvExporterTest(AbstractExportTest):
         sub.lastname = 'Doe'
         sub.firstname = 'John'
         sub.company = 'Apave'
-        sub.city = 'Rouen'
+        a = Address()
+        a.city = 'Rouen'
+        sub.address = a
         sub.issues_to_receive = 5
         sub.hors_serie1 = 6
         sub.subscription_price = 20
@@ -330,10 +345,12 @@ class ResubscribingTest(AbstractExportTest):
         sub.lastname = 'Nom'
         sub.firstname = 'Prenom'
         sub.name_addition = 'NameAddition'
-        sub.address = 'Adresse'
-        sub.address_addition = 'Addition'
-        sub.post_code = '12345'
-        sub.city = 'Ville'
+        a = Address()
+        a.address1 = 'Adresse'
+        a.address2 = 'Addition'
+        a.post_code = 12345
+        a.city = 'Ville'
+        sub.address = a
         return sub
 
     def test_header_line(self):
@@ -390,8 +407,10 @@ class ResubscribingTest(AbstractExportTest):
         """Initialize a subscriber without name info but with company info."""
         sub = Subscriber()
         sub.company = 'Google'
-        sub.address = 'Address'
-        sub.city = 'USA'
+        a = Address()
+        a.address1 = 'Address'
+        a.city = 'USA'
+        sub.address = a
         sub.issues_to_receive = 0
         sub.save()
 
@@ -402,7 +421,7 @@ class ResubscribingTest(AbstractExportTest):
         """Test an exported line with a 4 digit subscriber"""
         sub = self.set_regular_subscriber() 
         sub.issues_to_receive = 0
-        sub.post_code = 6345
+        sub.address.post_code = 6345
         sub.save()
         self.exporter.do_export()
 
