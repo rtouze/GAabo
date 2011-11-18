@@ -319,6 +319,7 @@ class SubscriberAdapter(object):
                 .strftime('%d/%m/%Y')
         self.sub['issues_to_receive'] = str(self.db_sub.issues_to_receive)
         self.sub['subs_beginning_issue'] = str(self.db_sub.subs_beginning_issue)
+        self.sub['subscriber_since_issue'] = str(self.db_sub.subscriber_since_issue)
 
         self._get_pricing_info()
 
