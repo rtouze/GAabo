@@ -72,6 +72,10 @@ def get_subscription_count():
     """Get the subscriber counter to displays it on notification area"""
     return Subscriber.get_count()
 
+def update_mail_sent():
+    """Update mail_sent_field when sbscriber list for mailing is exported"""
+    Subscriber.update_mail_sent()
+
 class Controler(object):
     """Controler called from the view to make the link with model classes"""
 

@@ -393,7 +393,6 @@ class ResubscribingTest(AbstractExportTest):
         sub.company = 'Capgemini'
         sub.save()
 
-
     def test_company_without_lastname(self):
         self.init_company_subscriber_without_name()
         self.exporter.do_export()
@@ -429,6 +428,22 @@ class ResubscribingTest(AbstractExportTest):
         expected_line = self.four_digit_cp_subscriber_line 
 
         self.assertEqual(expected_line, actual_line)
+
+    def test_when_mail_already_sent(self):
+        """Tests that a subscriber is not exported when he has already reveived
+        a resubscription mail and has not re subscribed"""
+        sub = Subscriber()
+        sub.lastname = 'toto'
+        sub.issues_to_receive = 0
+        sub.hors_serie1 = 0
+        sub.mail_sent = 1
+        sub.save()
+
+        self.exporter.do_export()
+        f = open_test_file()
+        self.assertEquals(1, len(f.readlines()))
+        #actual_line = get_second_line()
+
 
 class EmailExporterTest(AbstractExportTest):
     """This class tests the fonctionnality to unload the email list of
@@ -468,17 +483,6 @@ class EmailExporterTest(AbstractExportTest):
         """Tests when the subscriber has remaining issues"""
         subs = Subscriber()
         subs.issues_to_receive = 1
-        subs.email_address = 'tata@example.com'
-        subs.save()
-        lines = self.export_and_get_lines()
-
-        self.assertEqual('', lines)
-
-    def test_remaining_special_issues_subscriber(self):
-        """Tests when the subscriber has remaining special issues"""
-        subs = Subscriber()
-        subs.issues_to_receive = 0
-        subs.hors_serie1 = 1
         subs.email_address = 'tata@example.com'
         subs.save()
         lines = self.export_and_get_lines()

@@ -35,6 +35,7 @@ class Subscriber(object):
         self.comment = ''
         self.bank = ''
         self.ordering_type  = ''
+        self.mail_sent = 0
         self.dao = SubscriberDAO()
 
     def order_new_subscription(self):
@@ -83,7 +84,18 @@ class Subscriber(object):
         adhoc_dao = SubscriberDAO()
         adhoc_dao.delete(identifier)
 
+    @classmethod
+    def update_mail_sent(cls):
+        """Update mail_sent field when subscribers have no issues left to
+        receive. This is to be called when subscribers are exported for mailing
+        campain to keep them in the db but not send mail again and again
+        (causes extra costs)"""
+        adhoc_dao = SubscriberDAO()
+        adhoc_dao.update_mail_sent()
+
     def save(self):
+        if self.issues_to_receive > 0 or self.hors_serie1 > 0 :
+            self.mail_sent = 0
         if self.identifier == -1:
             self.dao.save(self)
             self.identifier = self.dao.get_new_subscriber_id()
@@ -102,7 +114,8 @@ class Subscriber(object):
                 self.issues_to_receive, self.subs_beginning_issue,
                 self.member, self.subscription_price, self.membership_price,
                 self.hors_serie1, self.hors_serie2, self.hors_serie3,
-                self.sticker_sent, self.comment, self.bank, self.ordering_type)
+                self.sticker_sent, self.comment, self.bank, self.ordering_type,
+                self.mail_sent)
 
 class Address(object):
     """Class that represent the subscriber address. It's a simple data
@@ -187,6 +200,7 @@ class SubscriberDAO(object):
             sub.sticker_sent = row[20]
             sub.comment = row[21]
             sub.ordering_type = row[23]
+            sub.mail_sent = row[24]
             
             sub.subscription_date = date_from_iso(iso_date_string)
             sub.address = address
@@ -201,9 +215,9 @@ class SubscriberDAO(object):
         email_address, subscriber_since_issue, subscription_date, issues_to_receive,
         subs_beginning_issue, member, subscription_price,
         membership_price, hors_serie1, hors_serie2, hors_serie3,
-        sticker_sent, comment, bank, ordering_type)
+        sticker_sent, comment, bank, ordering_type, mail_sent)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
         self.cursor.execute(sql, subscriber.get_attribute_sequence())
         self.conn.commit()
 
@@ -232,7 +246,8 @@ class SubscriberDAO(object):
         sticker_sent = ?,
         comment = ?,
         bank = ?,
-        ordering_type = ?
+        ordering_type = ?,
+        mail_sent = ?
         WHERE id = ?
         """
         self.cursor.execute(
@@ -272,6 +287,11 @@ class SubscriberDAO(object):
         sql = """SELECT COUNT(*) FROM subscribers"""
         result = self.cursor.execute(sql)
         for row in result: return row[0]
+
+    def update_mail_sent(self):
+        sql = """UPDATE subscribers SET mail_sent = 1 WHERE issues_to_receive = 0"""
+        self.cursor.execute(sql)
+        self.conn.commit()
 
 # Module Functions
 # TODO extract ! Subscriber does not care about this date stuff!

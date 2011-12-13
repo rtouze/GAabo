@@ -9,13 +9,13 @@ from subscriber import Subscriber
 from subscriber import is_correct_date
 from subscriber import Address
 import gaabo_conf
+from gaabo_exploit_db import SqliteDbOperator
 
 class TestSubscriber(unittest.TestCase):
     '''Tests the Subscriber class'''
 
     def setUp(self):
         '''Initialize the object and database'''
-        gaabo_conf.db_name = 'test.db'
         self.sub = Subscriber()
         self.conn = sqlite3.Connection('../databases/test.db')
         self.cursor = self.conn.cursor()
@@ -254,6 +254,51 @@ class TestSubscriber(unittest.TestCase):
         retieved_address = retrieved_sub.address
         self.assertEqual('NYC', retieved_address.city)
 
+    def test_mail_sent_updated(self):
+        sub = Subscriber()
+        sub.lastname = 'toto'
+        sub.issues_to_receive = 0
+        sub.hors_serie1 = 0
+        sub.mail_sent = 1
+        sub.save()
+
+        self.assertEqual(1, sub.mail_sent)
+
+        sub.issues_to_receive = 1
+        sub.save()
+        self.assertEqual(0, sub.mail_sent)
+
+    def test_mail_sent_updated_special_issue(self):
+        sub = Subscriber()
+        sub.lastname = 'toto'
+        sub.issues_to_receive = 0
+        sub.hors_serie1 = 0
+        sub.mail_sent = 1
+        sub.save()
+
+        self.assertEqual(1, sub.mail_sent)
+
+        sub.hors_serie1 = 1
+        sub.save()
+        self.assertEqual(0, sub.mail_sent)
+
+    def test_update_mail_sent(self):
+        sub = Subscriber()
+        sub.lastname = 'toto'
+        sub.issues_to_receive = 0
+        sub.save()
+        sub = Subscriber()
+        sub.lastname = 'tata'
+        sub.issues_to_receive = 1
+        sub.save()
+
+        Subscriber.update_mail_sent()
+
+        toto = Subscriber.get_subscribers_from_lastname('toto')[0]
+        tata = Subscriber.get_subscribers_from_lastname('tata')[0]
+
+        self.assertEqual(1, toto.mail_sent)
+        self.assertEqual(0, tata.mail_sent)
 
 class CorrectDateTest(unittest.TestCase):
     """This class tests if the function correct_date in module subscriber works
@@ -294,4 +339,7 @@ class CorrectDateTest(unittest.TestCase):
         
 
 if __name__ == '__main__':
+    gaabo_conf.db_name = 'test.db'
+    exploiter = SqliteDbOperator()
+    exploiter.create_db()
     unittest.main()

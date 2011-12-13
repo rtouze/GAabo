@@ -135,7 +135,8 @@ class ReSubscribeExporter(AbstractExporter):
 
     QUERY = """SELECT firstname, lastname, company,
     name_addition, address, address_addition,
-    post_code, city FROM subscribers WHERE issues_to_receive = 0"""
+    post_code, city FROM subscribers WHERE issues_to_receive = 0
+    AND mail_sent = 0"""
 
     def __init__(self, file_path):
         """This constructor open a file descriptor to realize the export"""
@@ -274,8 +275,7 @@ class EmailExporter(AbstractExporter):
     QUERY = """SELECT email_address
     FROM subscribers
     WHERE email_address != ''
-    AND issues_to_receive = 0
-    AND hors_serie1 = 0"""
+    AND issues_to_receive = 0"""
 
     def __init__(self, file_name):
         AbstractExporter.__init__(self, file_name)

@@ -12,6 +12,7 @@ import gaabo_controler
 from subscriber import Subscriber
 import subscriber_exporter
 import panels
+import bootstrap
 
 class GaaboFrame(wx.Frame):
 
@@ -180,15 +181,6 @@ class GaaboFrame(wx.Frame):
         """Generate the email list for resubscription campain"""
         file_name = '../email_resubscription.txt'
         exporter = subscriber_exporter.EmailExporter(file_name)
-        self._generic_exporter(exporter, file_name)
-
-    def generate_paper_mailing_list(self, event):
-        """Generate the email list for resubscription campain"""
-        file_name = '../resubscription.csv'
-        exporter = subscriber_exporter.ReSubscribeExporter(file_name)
-        self._generic_exporter(exporter, file_name)
-
-    def _generic_exporter(self, exporter, file_name):
         exporter.do_export()
         dialog = wx.MessageDialog(
                 None,
@@ -198,7 +190,25 @@ class GaaboFrame(wx.Frame):
                 )
         dialog.ShowModal()
 
+    def generate_paper_mailing_list(self, event):
+        """Generate the email list for resubscription campain"""
+        file_name = '../resubscription.csv'
+        exporter = subscriber_exporter.ReSubscribeExporter(file_name)
+        exporter.do_export()
+        message = u"Fichier %s généré.\n" % file_name
+        message += "Cliquer sur OK pour confirmer l'envoi "
+        message += u"du courrier et mettre à jour la base."
+        dialog = wx.MessageDialog(
+                None,
+                message,
+                'Confirmation',
+                style=wx.OK | wx.CANCEL
+                )
+        if dialog.ShowModal() == wx.ID_OK:
+            gaabo_controler.update_mail_sent()
+
 if __name__ == '__main__':
+    bootstrap.run()
     prog = wx.App(0)
     frame = GaaboFrame(None, 'GAabo')
     prog.MainLoop()
