@@ -17,7 +17,7 @@
     On veut un rapport donnant les abonnes a titre gratuits
 
     En tant que gestionnaire des abonnes
-    Je veux que les information que je saisis soient controlees
+    Je veux que les informations que je saisis soient controlees
     Pour eviter de mettre des donnees au format errone dans la base
 
     En tant que gestionnaire des abonnes
